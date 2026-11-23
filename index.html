@@ -148,12 +148,25 @@ p { margin: 0; }
 .stat .what { font-size: 30px; line-height: 1.3; }
 .stat .how { font-size: 24px; line-height: 1.4; color: var(--mute); }
 
-/* ---------- ideas ---------- */
-.ideas-title { font-size: 88px; line-height: 1.05; }
-.qs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px 72px; margin-top: auto; }
-.q { display: flex; flex-direction: column; gap: 12px; padding-top: 24px; border-top: 2px solid var(--ink); }
-.q h3 { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 56px; line-height: 1.05; }
-.q .qp { font-size: 28px; line-height: 1.4; color: var(--ink-soft); }
+/* ---------- gesture (the musician's view) ---------- */
+.gest-over { position: absolute; left: 128px; top: 300px; width: 640px; display: flex; flex-direction: column; gap: 24px; }
+.gest-over h2 { font-size: 84px; line-height: 1.0; }
+.gest-over .sub { font-size: 30px; line-height: 1.4; color: var(--mute); }
+.gest-note { position: absolute; left: 128px; top: 900px; width: 640px; font-size: 24px; line-height: 1.4; color: var(--dim); }
+
+/* ---------- how it fits together ---------- */
+.how-title { font-size: 84px; line-height: 1.05; margin-top: 20px; }
+.node { position: absolute; box-sizing: border-box; width: 440px; padding: 30px 34px; border-radius: 18px; background: rgba(243, 238, 230, 0.05); border: 2px solid rgba(243, 238, 230, 0.22); display: flex; flex-direction: column; gap: 12px; }
+.node h3 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 48px; line-height: 1.05; color: var(--ivory); }
+.node-p { font-size: 26px; line-height: 1.4; color: var(--mute); }
+.node-hot { border-color: var(--amber); box-shadow: 0 0 80px rgba(245, 182, 97, 0.18); }
+.node-hot h3 { color: var(--amber); }
+.node-quiet { background: rgba(243, 238, 230, 0.02); border-color: rgba(243, 238, 230, 0.12); }
+.link { color: var(--ivory); border-width: 2px; }
+.link-hot { color: var(--amber); border-width: 3px; }
+.link-quiet { color: var(--dim); border-style: dashed; }
+.link-label { position: absolute; font-size: 24px; line-height: 1.3; text-align: center; color: var(--mute); }
+.link-label.hot { color: var(--amber); }
 
 /* ---------- demo ---------- */
 .demo-title { font-size: 280px; line-height: 0.9; letter-spacing: -0.02em; }
@@ -233,6 +246,16 @@ body.idle #help { opacity: 0; }
 </div>
 
 </section>
+<section id="gesture" data-transition="fade">
+<video class="bleed film" src="media/gesture.mp4" poster="media/gesture.jpg" muted loop playsinline preload="auto"></video>
+<div class="veil-l"></div>
+<div class="gest-over">
+<p class="eyebrow rise">What a musician sees</p>
+<h2 class="rise" style="--i:1">The conductor’s beat, and a look your way.</h2>
+<p class="sub rise" style="--i:3">Head, hands, eyes and face come from the headset as they move. Musicians follow a person, not a video.</p>
+</div>
+
+</section>
 <section id="ensemble" data-transition="fade">
 <video class="bleed film" src="media/ensemble.mp4" poster="media/ensemble.jpg" muted loop playsinline preload="auto"></video>
 <div class="veil-b"></div>
@@ -284,61 +307,9 @@ var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;pre
 <p class="eyebrow rise">Spatial sound</p>
 <h2 class="rise" style="--i:1">Turn your head. The sound stays in the chair.</h2>
 <p class="body rise" style="--i:2">In front or behind, left or right, above or below: each musician is heard <b>from where they sit</b>, as in a real hall.</p>
-<p class="body rise" style="--i:3">Levels shown are the ones measured in the lab with the headset.</p>
+<p class="body rise" style="--i:3"><b>Listen:</b> the piano plays through our spatial engine as the head turns. Levels shown are the ones measured in the lab.</p>
 </div>
-<iframe class="embed" style="position:absolute; left:704px; top:128px; width:1088px; height:824px; border:0; background:transparent" sandbox="allow-scripts" data-src="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block;width:100%;height:100%}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;canvas id=&quot;c&quot;&gt;&lt;/canvas&gt;&lt;script&gt;
-(function(){
-var cv=document.getElementById(&#x27;c&#x27;),g=cv.getContext(&#x27;2d&#x27;);
-var IV=&#x27;#F3EEE6&#x27;,MU=&#x27;#A39C92&#x27;,AM=&#x27;#F5B661&#x27;,CH=&#x27;#2B2731&#x27;,SANS=&#x27;-apple-system,&quot;Helvetica Neue&quot;,Arial,sans-serif&#x27;;
-var LW=1088,LH=824,dpr=1;
-function size(){var r=cv.getBoundingClientRect(),w=r.width||LW,h=r.height||LH,s=Math.min(w/LW,h/LH);dpr=window.devicePixelRatio||1;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);g.setTransform(dpr*s,0,0,dpr*s,dpr*(w-LW*s)/2,dpr*(h-LH*s)/2);}
-var lastT=0;size();window.addEventListener(&#x27;resize&#x27;,function(){size();draw(lastT);});
-var HX=544,HY=560,R=Math.PI/180;
-function at(a,r){return{x:HX+r*Math.sin(a*R),y:HY-r*Math.cos(a*R),a:a};}
-var seats=[at(-48,200),at(-16,200),at(16,200),at(48,200),at(-54,310),at(-18,310),at(18,310),at(-22,420),at(22,420)];
-var sax=at(54,310);
-// timeline: [time s, head yaw deg (+ = right), right minus left dB as measured]
-var K=[[0,0,9.5],[3.2,0,9.5],[5.6,-55,17],[9,-55,17],[11.4,0,9.5],[13.2,0,9.5],[15.8,90,-16],[19.2,90,-16],[21.6,0,9.5]],T=21.6;
-function ease(s){return s*s*(3-2*s);}
-function state(t){t=t%T;for(var i=0;i&lt;K.length-1;i++){var a=K[i],b=K[i+1];if(t&gt;=a[0]&amp;&amp;t&lt;b[0]){var s=ease((t-a[0])/(b[0]-a[0]));var h=a[1]+(b[1]-a[1])*s,d=a[2]+(b[2]-a[2])*s,l;
-if(a[1]===b[1])l=a[1]===0?&#x27;Looking at the ensemble&#x27;:(a[1]&lt;0?&#x27;Head turned left&#x27;:&#x27;Head turned right&#x27;);else l=b[1]===0?&#x27;Back to the ensemble&#x27;:(b[1]&lt;0?&#x27;Turning left&#x27;:&#x27;Turning right&#x27;);return{h:h,d:d,l:l};}}return{h:0,d:9.5,l:&#x27;Looking at the ensemble&#x27;};}
-function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function chair(p,c){g.save();g.translate(p.x,p.y);g.rotate(p.a*R);rr(-17,-17,34,34,9);g.fillStyle=c;g.fill();g.restore();}
-function draw(t){
-var st=state(t),h=st.h,d=st.d;
-g.clearRect(-50,-50,LW+100,LH+100);
-// arcs of the hall
-g.lineWidth=2;g.strokeStyle=&#x27;rgba(243,238,230,0.08)&#x27;;[200,310,420].forEach(function(r){g.beginPath();g.arc(HX,HY,r,(-90-62)*R,(-90+62)*R);g.stroke();});
-// field of view
-var gr=g.createRadialGradient(HX,HY,30,HX,HY,500);gr.addColorStop(0,&#x27;rgba(245,182,97,0.20)&#x27;);gr.addColorStop(1,&#x27;rgba(245,182,97,0)&#x27;);
-g.save();g.beginPath();g.rect(-50,-50,LW+100,690);g.clip();g.fillStyle=gr;g.beginPath();g.moveTo(HX,HY);g.arc(HX,HY,500,(h-90-30)*R,(h-90+30)*R);g.closePath();g.fill();g.restore();
-// the others play softly
-seats.forEach(function(p,i){var ph=((t/2.6)+i*0.37)%1;g.strokeStyle=&#x27;rgba(243,238,230,&#x27;+(0.07*(1-ph)).toFixed(3)+&#x27;)&#x27;;g.lineWidth=2;g.beginPath();g.arc(p.x,p.y,18+ph*70,0,7);g.stroke();chair(p,CH);});
-// path from the saxophone to the head
-g.save();g.setLineDash([6,12]);g.lineDashOffset=-t*36;g.strokeStyle=&#x27;rgba(245,182,97,0.55)&#x27;;g.lineWidth=2;g.beginPath();g.moveTo(sax.x,sax.y);g.lineTo(HX,HY);g.stroke();g.restore();
-// the saxophone&#x27;s sound
-for(var k=0;k&lt;4;k++){var ph=((t/1.8)+k/4)%1;g.strokeStyle=&#x27;rgba(245,182,97,&#x27;+(0.55*(1-ph)*(1-ph)).toFixed(3)+&#x27;)&#x27;;g.lineWidth=3;g.beginPath();g.arc(sax.x,sax.y,20+ph*230,0,7);g.stroke();}
-g.save();g.shadowColor=&#x27;rgba(245,182,97,0.9)&#x27;;g.shadowBlur=30;chair(sax,AM);g.restore();
-g.fillStyle=AM;g.font=&#x27;600 26px &#x27;+SANS;g.textAlign=&#x27;left&#x27;;g.fillText(&#x27;Saxophone&#x27;,sax.x+34,sax.y-24);
-// conductor: shoulders, head, nose, ears
-var lv=Math.max(0,Math.min(1,0.5-d/38)),rv=Math.max(0,Math.min(1,0.5+d/38));
-g.save();g.translate(HX,HY);g.rotate(h*R);
-g.fillStyle=&#x27;#24212A&#x27;;g.beginPath();g.ellipse(0,10,74,26,0,0,7);g.fill();
-[[-1,lv,IV,&#x27;rgba(243,238,230,&#x27;],[1,rv,AM,&#x27;rgba(245,182,97,&#x27;]].forEach(function(e){g.fillStyle=e[3]+(0.10+0.30*e[1]).toFixed(3)+&#x27;)&#x27;;g.beginPath();g.arc(e[0]*36,0,12+e[1]*30,0,7);g.fill();g.fillStyle=e[2];g.beginPath();g.arc(e[0]*36,0,9,0,7);g.fill();});
-g.fillStyle=IV;g.beginPath();g.arc(0,0,31,0,7);g.fill();
-g.beginPath();g.moveTo(-11,-27);g.lineTo(0,-48);g.lineTo(11,-27);g.closePath();g.fill();
-g.restore();
-g.fillStyle=MU;g.font=&#x27;500 24px &#x27;+SANS;g.textAlign=&#x27;center&#x27;;g.fillText(&#x27;Conductor, seen from above&#x27;,HX,HY+82);
-// readout
-g.textAlign=&#x27;left&#x27;;g.fillStyle=IV;g.font=&#x27;600 30px &#x27;+SANS;g.fillText(st.l,40,712);
-[[&#x27;Left ear&#x27;,lv,IV,752],[&#x27;Right ear&#x27;,rv,AM,796]].forEach(function(b){g.fillStyle=MU;g.font=&#x27;500 24px &#x27;+SANS;g.fillText(b[0],40,b[3]+8);rr(170,b[3]-8,380,16,8);g.fillStyle=&#x27;rgba(243,238,230,0.10)&#x27;;g.fill();rr(170,b[3]-8,Math.max(16,380*b[1]),16,8);g.fillStyle=b[2];g.fill();});
-g.textAlign=&#x27;right&#x27;;g.fillStyle=MU;g.font=&#x27;500 24px &#x27;+SANS;g.fillText(&#x27;Right ear minus left ear&#x27;,1048,700);
-g.fillStyle=AM;g.font=&#x27;italic 84px Georgia,&quot;Times New Roman&quot;,serif&#x27;;g.fillText((d&gt;=0?&#x27;+&#x27;:&#x27;−&#x27;)+Math.abs(d).toFixed(1)+&#x27; dB&#x27;,1048,790);
-}
-var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now-lastT*0;prev=now;lastT=(now-t0)/1000;draw(lastT);requestAnimationFrame(frame);}
-draw(0);requestAnimationFrame(frame);
-})();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+<video class="film" src="media/sound.mp4" poster="media/sound.jpg" style="position:absolute; left:704px; top:128px; width:1088px; height:824px; object-fit:contain" loop playsinline preload="auto"></video>
 
 </section>
 <section id="session" data-transition="fade">
@@ -424,6 +395,23 @@ var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;pre
 <li class="rise" style="--i:5">On the screen, the session page shows who is in.</li>
 </ol>
 <p class="credit">Spatial audio by atmoky (atmoky.com). MUSMET project, SONIC Lab, Politecnico di Torino.</p>
+
+</section>
+<section id="how" class="stage">
+<p class="eyebrow">Behind the demo</p>
+<h2 class="how-title">How it fits together.</h2>
+<div class="node" style="left:128px; top:400px"><h3>Conductor</h3><p class="node-p">Meta Quest headset: the hall, the score, head and hands.</p></div>
+<div class="node node-hot" style="left:740px; top:400px"><h3>Conductor’s box</h3><p class="node-p">Raspberry Pi: link to the musicians, spatial engine, low-latency audio.</p></div>
+<div class="node" style="left:1352px; top:400px"><h3>Musicians</h3><p class="node-p">A browser for the picture, a small audio box for the sound. Anywhere.</p></div>
+<div class="node node-quiet" style="left:740px; top:712px"><h3>Session server</h3><p class="node-p">Seats, looks, the session page. Brings everyone together.</p></div>
+<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M568 500 L740 500" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M725.6 507.0 L740 500 L725.6 493.0" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M582.4 493.0 L568 500 L582.4 507.0" fill="none" stroke="#F3EEE6" stroke-width="2"/></svg>
+<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1180 470 L1352 470" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M1337.6 477.0 L1352 470 L1337.6 463.0" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M1194.4 463.0 L1180 470 L1194.4 477.0" fill="none" stroke="#F3EEE6" stroke-width="2"/></svg>
+<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1180 560 L1352 560" fill="none" stroke="#F5B661" stroke-width="3"/><path d="M1337.6 567.0 L1352 560 L1337.6 553.0" fill="none" stroke="#F5B661" stroke-width="3"/><path d="M1194.4 553.0 L1180 560 L1194.4 567.0" fill="none" stroke="#F5B661" stroke-width="3"/></svg>
+<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M960 640 L960 712" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="10 8"/><path d="M953.0 697.6 L960 712 L967.0 697.6" fill="none" stroke="#6E685F" stroke-width="2"/><path d="M967.0 654.4 L960 640 L953.0 654.4" fill="none" stroke="#6E685F" stroke-width="2"/></svg>
+<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1572 640 L1572 790 L1180 790" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="10 8"/><path d="M1194.4 783.0 L1180 790 L1194.4 797.0" fill="none" stroke="#6E685F" stroke-width="2"/><path d="M1579.0 654.4 L1572 640 L1565.0 654.4" fill="none" stroke="#6E685F" stroke-width="2"/></svg>
+<p class="link-label" style="left:520px; top:520px; width:268px">Wi-Fi</p>
+<p class="link-label" style="left:1150px; top:412px; width:232px">gesture</p>
+<p class="link-label hot" style="left:1150px; top:578px; width:232px">sound, 9 ms</p>
 
 </section>
 </div>
