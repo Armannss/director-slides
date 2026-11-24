@@ -46,384 +46,834 @@
   src: url(fonts/InterTight-normal-600.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-/* Director, LINKS deck. "The house goes dark, the sound becomes light":
-   near-black stage, one warm stage-light accent, Instrument Serif for what is said,
-   Inter Tight for what is shown. */
+
+/* Director — LINKS deck ("The house goes dark, the sound becomes light") */
 :root {
   --night: #0B0B0E;
-  --stage: #141218;
+  --stage: #121016;
   --ivory: #F3EEE6;
-  --mute: #A39C92;
-  --dim: #6E685F;
+  --mute: #A8A095;
+  --dim: #6C665D;
   --amber: #F5B661;
+  --amber-soft: rgba(245, 182, 97, 0.16);
   --amber-deep: #9A5B12;
   --paper: #EFE9DF;
   --ink: #17151A;
-  --ink-soft: #57514B;
+  --ink-soft: #565049;
+  --ok: #7BD88F;
 }
 
-section {
-  box-sizing: border-box;
-  padding: 128px;
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; -webkit-font-smoothing: antialiased; }
+body { cursor: default; font-family: 'Inter Tight', -apple-system, Arial, sans-serif; }
+body.idle { cursor: none; }
+
+#stage {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  transform-origin: 0 0; background: var(--night); overflow: hidden;
+}
+
+/* ---------- layered cinematic transitions ---------- */
+#stage > section {
+  position: absolute; inset: 0; width: 1920px; height: 1080px;
+  padding: 120px 128px;
   background: var(--night);
   color: var(--ivory);
-  font-family: 'Inter Tight', Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transform: scale(1.012);
+  transition: opacity 560ms cubic-bezier(.22, .8, .24, 1),
+              transform 640ms cubic-bezier(.22, .8, .24, 1),
+              visibility 0s linear 560ms;
 }
-section.stage { background: var(--stage); }
-section.paper { background: var(--paper); color: var(--ink); }
-section.amber { background: var(--amber); color: var(--ink); }
+#stage > section.leaving {
+  visibility: visible;
+  opacity: 0;
+  transform: scale(0.992);
+  z-index: 2;
+  transition: opacity 480ms cubic-bezier(.22, .8, .24, 1),
+              transform 560ms cubic-bezier(.22, .8, .24, 1),
+              visibility 0s linear 480ms;
+}
+#stage > section.active {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  z-index: 3;
+  transition: opacity 560ms cubic-bezier(.22, .8, .24, 1),
+              transform 640ms cubic-bezier(.22, .8, .24, 1),
+              visibility 0s linear 0s;
+}
 
-h1, h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; margin: 0; letter-spacing: -0.01em; }
+#stage > section.stage {
+  background: radial-gradient(ellipse 90% 65% at 50% 0%, rgba(245, 182, 97, 0.08) 0%, transparent 62%), var(--stage);
+}
+#stage > section.paper {
+  background: radial-gradient(ellipse 85% 55% at 50% -10%, rgba(245, 182, 97, 0.24) 0%, rgba(239, 233, 223, 0) 64%), var(--paper);
+  color: var(--ink);
+}
+#stage > section.amber {
+  background: radial-gradient(circle at 22% 24%, #FAD089 0%, #F5B661 48%, #E6A044 100%);
+  color: var(--ink);
+}
+
+h1, h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; margin: 0; letter-spacing: -0.012em; }
 h3 { margin: 0; font-weight: 600; }
 p { margin: 0; }
 
-.eyebrow { font-size: 24px; line-height: 1.3; letter-spacing: 4px; text-transform: uppercase; font-weight: 600; color: var(--amber); }
+.eyebrow {
+  font-size: 22px; line-height: 1.3; letter-spacing: 4.5px;
+  text-transform: uppercase; font-weight: 600; color: var(--amber);
+}
 .paper .eyebrow { color: var(--amber-deep); }
 .hl { color: var(--amber); }
 
-/* ---------- arrivals ---------- */
-@keyframes rise { from { opacity: 0; transform: translateY(28px); } }
-@keyframes bloom { from { opacity: 0; filter: blur(14px); } }
-@keyframes push { from { transform: scale(1.09); } }
-@keyframes lightup { from { opacity: 0; filter: brightness(0.2); } }
-.rise { animation: rise 900ms cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 140ms); }
-.bloom { animation: bloom 1300ms cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 140ms); }
-.film { animation: lightup 1600ms ease-out both; }
-.push { animation: push 7s cubic-bezier(.15, .6, .2, 1) both, lightup 1600ms ease-out both; }
+/* ---------- replayable arrival animations ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes bloom { from { opacity: 0; filter: blur(12px); transform: scale(0.985); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes push { from { transform: scale(1.075); } to { transform: scale(1.0); } }
+@keyframes lightup { from { opacity: 0; filter: brightness(0.28); } to { opacity: 1; filter: brightness(1); } }
+@keyframes drawTick { from { transform: scaleX(0); opacity: 0.2; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes strokeDraw { from { stroke-dashoffset: 320; opacity: 0.2; } to { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes pulseDot { 0%, 100% { opacity: 0.55; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.15); } }
 
-/* ---------- full-bleed pictures ---------- */
-.bleed { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
-.veil-b { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: linear-gradient(180deg, rgba(11, 11, 14, 0.15) 0%, rgba(11, 11, 14, 0) 30%, rgba(11, 11, 14, 0.82) 66%, rgba(11, 11, 14, 0.97) 100%); }
-.veil-l { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(11, 11, 14, 0.96) 0%, rgba(11, 11, 14, 0.82) 34%, rgba(11, 11, 14, 0) 68%); }
+section:not(.play-anim) .rise,
+section:not(.play-anim) .bloom,
+section:not(.play-anim) .tick-draw { opacity: 0; }
 
-/* ---------- cover ---------- */
-.cover-eyebrow { position: absolute; left: 136px; top: 448px; width: 1400px; }
-.cover-title { position: absolute; left: 118px; top: 500px; width: 1500px; font-size: 300px; line-height: 0.9; letter-spacing: -0.02em; }
-.cover-line { position: absolute; left: 136px; top: 790px; width: 1500px; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 56px; line-height: 1.15; color: var(--amber); }
-.cover-by { position: absolute; left: 136px; top: 896px; width: 1600px; font-size: 24px; line-height: 1.4; color: var(--mute); }
+section.play-anim .rise { animation: rise 820ms cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(var(--i, 0) * 125ms); }
+section.play-anim .bloom { animation: bloom 1150ms cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(var(--i, 0) * 125ms); }
+section.play-anim .film { animation: lightup 1200ms ease-out both; }
+section.play-anim .push { animation: push 9s cubic-bezier(.15, .6, .2, 1) both, lightup 1300ms ease-out both; }
+section.play-anim .tick-draw { transform-origin: left center; animation: drawTick 800ms cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(var(--i, 0) * 140ms); }
+section.play-anim .motif path,
+section.play-anim .motif circle { stroke-dasharray: 320; animation: strokeDraw 1350ms cubic-bezier(.22, .8, .24, 1) both; animation-delay: calc(var(--i, 0) * 160ms + 200ms); }
 
-/* ---------- statement + three words (problem / answer, magic move) ---------- */
-.statement { font-size: 104px; line-height: 1.05; width: 1560px; }
+/* ---------- full-bleed pictures & cinema veils ---------- */
+.bleed { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; pointer-events: none; }
+.veil-b {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(11, 11, 14, 0.20) 0%, rgba(11, 11, 14, 0.02) 28%, rgba(11, 11, 14, 0.78) 64%, rgba(11, 11, 14, 0.97) 100%);
+}
+.veil-l {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(11, 11, 14, 0.96) 0%, rgba(11, 11, 14, 0.86) 33%, rgba(11, 11, 14, 0.22) 56%, rgba(11, 11, 14, 0) 72%);
+}
+.badge-pill {
+  position: absolute; top: 56px; right: 72px; z-index: 5;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 20px; border-radius: 999px;
+  background: rgba(14, 13, 18, 0.62);
+  border: 1px solid rgba(243, 238, 230, 0.16);
+  backdrop-filter: blur(12px);
+  font-size: 18px; font-weight: 500; letter-spacing: 0.3px; color: rgba(243, 238, 230, 0.84);
+}
+.badge-pill .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+  box-shadow: 0 0 12px var(--amber); animation: pulseDot 2.4s ease-in-out infinite;
+}
+
+/* ---------- Slide 1: Cover ---------- */
+.cover-glow {
+  position: absolute; left: -120px; top: 360px; width: 1120px; height: 640px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(245, 182, 97, 0.16) 0%, rgba(245, 182, 97, 0) 68%);
+}
+.cover-eyebrow { position: absolute; left: 136px; top: 432px; width: 1400px; }
+.cover-title {
+  position: absolute; left: 118px; top: 480px; width: 1500px;
+  font-size: 304px; line-height: 0.88; letter-spacing: -0.025em;
+  text-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+}
+.cover-line {
+  position: absolute; left: 136px; top: 774px; width: 1500px;
+  font-family: 'Instrument Serif', Georgia, serif; font-style: italic;
+  font-size: 58px; line-height: 1.15; color: var(--amber);
+}
+.cover-rule {
+  position: absolute; left: 136px; top: 868px; width: 120px; height: 2px;
+  background: linear-gradient(90deg, var(--amber), rgba(245, 182, 97, 0));
+}
+.cover-by { position: absolute; left: 136px; top: 892px; width: 1600px; font-size: 24px; line-height: 1.4; color: var(--mute); }
+
+/* ---------- Slides 2 & 3: Problem -> Answer (Magic Move) ---------- */
+.stage-ambient {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 68% 45% at 50% 90%, rgba(245, 182, 97, 0.06) 0%, transparent 65%);
+}
+.statement { font-size: 102px; line-height: 1.05; width: 1580px; }
 .statement i { color: var(--amber); }
-.word { position: absolute; width: 520px; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 104px; line-height: 1.05; }
-.word.off { top: 590px; color: var(--dim); }
-.word.on { top: 360px; color: var(--ink); }
-.cap { position: absolute; top: 726px; width: 470px; font-size: 28px; line-height: 1.4; color: var(--mute); }
-.tick { position: absolute; top: 340px; width: 470px; height: 4px; background: var(--amber-deep); }
-.ans-h { position: absolute; top: 500px; width: 470px; font-size: 34px; line-height: 1.25; color: var(--ink); }
-.ans-p { position: absolute; top: 656px; width: 470px; font-size: 26px; line-height: 1.4; color: var(--ink-soft); }
-.ans-title { font-size: 88px; line-height: 1.05; width: 1600px; }
-.rt-label { position: absolute; top: 375px; width: 260px; font-size: 24px; line-height: 1.3; text-align: center; color: var(--ivory); }
-.rt-cap { position: absolute; left: 560px; top: 420px; width: 800px; font-size: 24px; line-height: 1.3; text-align: center; color: var(--mute); }
-.ans-foot { position: absolute; left: 128px; top: 850px; width: 1500px; font-size: 30px; line-height: 1.4; color: var(--ink-soft); }
 
-/* ---------- words over a picture ---------- */
-.over { position: absolute; left: 128px; top: 150px; width: 780px; display: flex; flex-direction: column; gap: 24px; }
-.over h2 { font-size: 104px; line-height: 1.0; }
-.over-lines { position: absolute; left: 128px; top: 680px; width: 720px; display: flex; flex-direction: column; gap: 18px; }
-.over-lines p { font-size: 30px; line-height: 1.35; padding-left: 26px; border-left: 3px solid var(--amber); }
-.low { position: absolute; left: 128px; top: 610px; width: 1500px; display: flex; flex-direction: column; gap: 20px; }
-.low h2 { font-size: 96px; line-height: 1.02; }
-.low .sub { font-size: 30px; line-height: 1.4; color: var(--mute); width: 1100px; }
+.col-motif { position: absolute; width: 84px; height: 52px; }
+.col-motif.off { top: 516px; color: rgba(168, 160, 149, 0.42); }
+.col-motif.on  { top: 266px; color: var(--amber-deep); }
 
-/* ---------- a page from the product, lit like a screen in the dark ---------- */
-.side { width: 520px; display: flex; flex-direction: column; gap: 26px; }
+.word {
+  position: absolute; width: 520px;
+  font-family: 'Instrument Serif', Georgia, serif; font-style: italic;
+  font-size: 106px; line-height: 1.05;
+  will-change: transform, color;
+}
+.word.off { top: 580px; color: var(--dim); }
+.word.on  { top: 360px; color: var(--ink); }
+
+.cap { position: absolute; top: 720px; width: 470px; font-size: 28px; line-height: 1.42; color: var(--mute); }
+.col-rule {
+  position: absolute; top: 564px; width: 470px; height: 1px;
+  background: linear-gradient(90deg, rgba(243, 238, 230, 0.14), rgba(243, 238, 230, 0.02));
+}
+.tick { position: absolute; top: 340px; width: 470px; height: 4px; background: linear-gradient(90deg, var(--amber-deep), rgba(154, 91, 18, 0.35)); border-radius: 2px; }
+.ans-h { position: absolute; top: 496px; width: 470px; font-size: 34px; font-weight: 500; line-height: 1.26; color: var(--ink); }
+.ans-p { position: absolute; top: 642px; width: 470px; font-size: 26px; line-height: 1.42; color: var(--ink-soft); }
+.ans-title { font-size: 90px; line-height: 1.05; width: 1600px; }
+.ans-foot {
+  position: absolute; left: 128px; top: 848px;
+  display: inline-flex; align-items: center; gap: 16px;
+  padding: 18px 28px; border-radius: 14px;
+  background: rgba(154, 91, 18, 0.09);
+  border: 1px solid rgba(154, 91, 18, 0.22);
+  font-size: 28px; line-height: 1.35; color: var(--ink);
+}
+.ans-foot-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber-deep); flex-shrink: 0; }
+
+/* ---------- Slide 4, 5, 6: Words over full-bleed visuals ---------- */
+.over { position: absolute; left: 128px; top: 146px; width: 780px; display: flex; flex-direction: column; gap: 22px; }
+.over h2 { font-size: 102px; line-height: 1.0; }
+.over-lines { position: absolute; left: 128px; top: 660px; width: 700px; display: flex; flex-direction: column; gap: 20px; }
+.over-lines p {
+  font-size: 30px; line-height: 1.35; padding-left: 26px;
+  border-left: 3px solid var(--amber);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+}
+.low { position: absolute; left: 128px; top: 616px; width: 1520px; display: flex; flex-direction: column; gap: 20px; }
+.low h2 { font-size: 96px; line-height: 1.02; text-shadow: 0 8px 34px rgba(0, 0, 0, 0.55); }
+.low .sub { font-size: 30px; line-height: 1.42; color: rgba(243, 238, 230, 0.78); width: 1120px; }
+
+.gest-over { position: absolute; left: 128px; top: 280px; width: 650px; display: flex; flex-direction: column; gap: 24px; }
+.gest-over h2 { font-size: 86px; line-height: 1.0; }
+.gest-over .sub { font-size: 30px; line-height: 1.42; color: var(--mute); }
+.gest-chip {
+  position: absolute; left: 128px; top: 892px;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 12px 22px; border-radius: 999px;
+  background: rgba(243, 238, 230, 0.05); border: 1px solid rgba(243, 238, 230, 0.14);
+  font-size: 20px; color: var(--mute);
+}
+.gest-chip span { color: var(--amber); font-weight: 600; }
+
+/* ---------- Slides 7 & 9: Live 3D product browser showcase ---------- */
+.side { width: 520px; display: flex; flex-direction: column; gap: 26px; z-index: 2; }
 .side h2 { font-size: 84px; line-height: 1.0; }
-.side .body { font-size: 30px; line-height: 1.38; color: var(--mute); }
+.side .body { font-size: 30px; line-height: 1.4; color: var(--mute); }
 .side b { color: var(--ivory); font-weight: 600; }
-.shot { position: absolute; left: 704px; top: 234px; width: 1088px; height: 612px; object-fit: cover; border-radius: 20px; box-shadow: 0 0 0 1px rgba(245, 182, 97, 0.4), 0 0 140px rgba(245, 182, 97, 0.16), 0 40px 90px rgba(0, 0, 0, 0.7); }
 
-/* ---------- numbers ---------- */
-@property --n { syntax: '<integer>'; inherits: false; initial-value: 0 }
-@keyframes count { from { --n: 0 } }
-.n { animation: count 1.4s ease-out both }
-.nums-title { font-size: 84px; line-height: 1.05; }
-.nums { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 56px; margin-top: auto; }
-.stat { display: flex; flex-direction: column; gap: 16px; padding-top: 28px; border-top: 2px solid var(--amber); }
-.fig { display: flex; flex-direction: row; align-items: baseline; gap: 12px; }
-.stat .n { font-family: 'Instrument Serif', Georgia, serif; font-size: 200px; line-height: 1; color: var(--amber); }
-.stat .unit { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 56px; line-height: 1; color: var(--amber); }
-.stat .what { font-size: 30px; line-height: 1.3; }
-.stat .how { font-size: 24px; line-height: 1.4; color: var(--mute); }
+.browser-frame {
+  position: absolute; left: 696px; top: 208px; width: 1096px; height: 656px;
+  border-radius: 20px; overflow: hidden;
+  background: #14100E;
+  box-shadow: 0 0 0 1px rgba(245, 182, 97, 0.34),
+              0 0 150px rgba(245, 182, 97, 0.16),
+              0 44px 100px rgba(0, 0, 0, 0.78);
+  display: flex; flex-direction: column;
+}
+.browser-bar {
+  height: 40px; flex-shrink: 0;
+  background: linear-gradient(180deg, #1E1917 0%, #171311 100%);
+  border-bottom: 1px solid rgba(245, 182, 97, 0.14);
+  display: flex; align-items: center; padding: 0 18px; gap: 10px;
+}
+.b-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(243, 238, 230, 0.18); }
+.b-dot.hi { background: rgba(245, 182, 97, 0.65); }
+.b-url {
+  margin: 0 auto; padding: 4px 20px; border-radius: 999px;
+  background: rgba(243, 238, 230, 0.05);
+  font-size: 14px; letter-spacing: 0.4px; color: rgba(243, 238, 230, 0.56);
+}
+.b-live {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 600; color: var(--ok);
+}
+.b-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.browser-media {
+  position: relative; width: 100%; height: 616px; background: #14100E;
+}
+.browser-media video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+}
 
-/* ---------- gesture (the musician's view) ---------- */
-.gest-over { position: absolute; left: 128px; top: 300px; width: 640px; display: flex; flex-direction: column; gap: 24px; }
-.gest-over h2 { font-size: 84px; line-height: 1.0; }
-.gest-over .sub { font-size: 30px; line-height: 1.4; color: var(--mute); }
-.gest-note { position: absolute; left: 128px; top: 900px; width: 640px; font-size: 24px; line-height: 1.4; color: var(--dim); }
+/* ---------- Slide 8: Spatial Sound (hero slide + live synced stereo meter) ---------- */
+.sound-video-wrap {
+  position: absolute; left: 700px; top: 118px; width: 1096px; height: 844px;
+  border-radius: 22px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(245, 182, 97, 0.18), 0 0 120px rgba(245, 182, 97, 0.08);
+  background: #0B0B0E;
+}
+.sound-video-wrap video { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-/* ---------- how it fits together ---------- */
-.how-title { font-size: 84px; line-height: 1.05; margin-top: 20px; }
-.node { position: absolute; box-sizing: border-box; width: 440px; padding: 30px 34px; border-radius: 18px; background: rgba(243, 238, 230, 0.05); border: 2px solid rgba(243, 238, 230, 0.22); display: flex; flex-direction: column; gap: 12px; }
+.sound-panel {
+  margin-top: auto;
+  padding: 22px 24px; border-radius: 16px;
+  background: rgba(243, 238, 230, 0.035);
+  border: 1px solid rgba(245, 182, 97, 0.22);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sound-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 17px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--amber); font-weight: 600;
+}
+.sound-phase { color: var(--ivory); letter-spacing: 0.2px; text-transform: none; font-weight: 500; font-size: 19px; }
+.vu-row { display: grid; grid-template-columns: 32px 1fr 56px; align-items: center; gap: 12px; font-size: 18px; color: var(--mute); }
+.vu-track { height: 10px; border-radius: 999px; background: rgba(243, 238, 230, 0.09); overflow: hidden; }
+.vu-fill { height: 100%; border-radius: 999px; width: 50%; transition: width 90ms linear; }
+.vu-fill.l { background: linear-gradient(90deg, rgba(243, 238, 230, 0.55), var(--ivory)); }
+.vu-fill.r { background: linear-gradient(90deg, #D98B2B, var(--amber)); box-shadow: 0 0 14px rgba(245, 182, 97, 0.55); }
+.vu-val { text-align: right; font-variant-numeric: tabular-nums; font-size: 17px; color: var(--ivory); }
+
+.sound-controls {
+  display: flex; align-items: center; gap: 10px; margin-top: 4px;
+}
+.ctrl-btn {
+  appearance: none; border: 1px solid rgba(243, 238, 230, 0.18);
+  background: rgba(243, 238, 230, 0.05); color: var(--ivory);
+  padding: 8px 16px; border-radius: 999px; font: 500 16px/1 'Inter Tight', sans-serif;
+  cursor: pointer; transition: background 180ms, border-color 180ms;
+}
+.ctrl-btn:hover { background: rgba(245, 182, 97, 0.18); border-color: var(--amber); }
+.sound-prog { flex: 1; height: 4px; border-radius: 999px; background: rgba(243, 238, 230, 0.12); overflow: hidden; }
+.sound-prog-fill { height: 100%; width: 0%; background: var(--amber); }
+
+/* ---------- Slide 10: Numbers & Proportional Latency Scale ---------- */
+.nums-title { font-size: 84px; line-height: 1.05; margin-top: 12px; }
+.latency-stage {
+  position: relative; width: 1664px; height: 248px; margin-top: 26px;
+}
+.latency-stage canvas { width: 1664px; height: 248px; display: block; }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; margin-top: auto; }
+.stat {
+  position: relative;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 28px 28px 26px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(243, 238, 230, 0.048) 0%, rgba(243, 238, 230, 0.015) 100%);
+  border: 1px solid rgba(243, 238, 230, 0.10);
+  border-top: 3px solid var(--amber);
+}
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.stat-icon { width: 54px; height: 34px; color: var(--amber); opacity: 0.85; margin-top: 8px; }
+.fig { display: flex; flex-direction: row; align-items: baseline; gap: 10px; }
+.stat .n { font-family: 'Instrument Serif', Georgia, serif; font-size: 164px; line-height: 0.92; color: var(--amber); font-variant-numeric: tabular-nums; }
+.stat .unit { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 50px; line-height: 1; color: var(--amber); }
+.stat .what { font-size: 27px; line-height: 1.3; color: var(--ivory); font-weight: 500; }
+.stat .how { font-size: 22px; line-height: 1.4; color: var(--mute); }
+
+/* ---------- Slide 11: Your turn. ---------- */
+.demo-arcs {
+  position: absolute; right: -140px; top: -120px; width: 1180px; height: 1180px;
+  pointer-events: none; opacity: 0.16;
+}
+.demo-title { font-size: 272px; line-height: 0.88; letter-spacing: -0.025em; position: relative; z-index: 2; }
+.steps {
+  margin: 56px 0 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 2;
+}
+.steps li {
+  display: flex; align-items: center; gap: 24px;
+  font-size: 38px; line-height: 1.25; font-weight: 500;
+}
+.step-num {
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ink); color: var(--amber);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 28px;
+}
+.credit {
+  position: absolute; left: 128px; bottom: 58px; width: 1664px;
+  padding-top: 20px; border-top: 1px solid rgba(23, 21, 26, 0.22);
+  font-size: 23px; line-height: 1.4; color: rgba(23, 21, 26, 0.86); z-index: 2;
+}
+
+/* ---------- Slide 12: How it fits together (Backup, live animated packets) ---------- */
+.how-title { font-size: 84px; line-height: 1.05; margin-top: 14px; }
+.node {
+  position: absolute; width: 440px; padding: 30px 34px; border-radius: 18px;
+  background: rgba(243, 238, 230, 0.045); border: 2px solid rgba(243, 238, 230, 0.22);
+  display: flex; flex-direction: column; gap: 12px;
+  backdrop-filter: blur(8px);
+}
 .node h3 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 48px; line-height: 1.05; color: var(--ivory); }
-.node-p { font-size: 26px; line-height: 1.4; color: var(--mute); }
-.node-hot { border-color: var(--amber); box-shadow: 0 0 80px rgba(245, 182, 97, 0.18); }
+.node-p { font-size: 25px; line-height: 1.42; color: var(--mute); }
+.node-hot {
+  border-color: var(--amber);
+  background: linear-gradient(180deg, rgba(245, 182, 97, 0.11) 0%, rgba(245, 182, 97, 0.03) 100%);
+  box-shadow: 0 0 85px rgba(245, 182, 97, 0.20);
+}
 .node-hot h3 { color: var(--amber); }
-.node-quiet { background: rgba(243, 238, 230, 0.02); border-color: rgba(243, 238, 230, 0.12); }
-.link { color: var(--ivory); border-width: 2px; }
-.link-hot { color: var(--amber); border-width: 3px; }
-.link-quiet { color: var(--dim); border-style: dashed; }
-.link-label { position: absolute; font-size: 24px; line-height: 1.3; text-align: center; color: var(--mute); }
-.link-label.hot { color: var(--amber); }
+.node-quiet { background: rgba(243, 238, 230, 0.02); border-color: rgba(243, 238, 230, 0.13); }
+.link-label { position: absolute; font-size: 23px; line-height: 1.3; text-align: center; color: var(--mute); font-weight: 500; }
+.link-label.hot { color: var(--amber); font-weight: 600; }
 
-/* ---------- demo ---------- */
-.demo-title { font-size: 280px; line-height: 0.9; letter-spacing: -0.02em; }
-.steps { margin: 56px 0 0; padding-left: 56px; display: flex; flex-direction: column; gap: 20px; }
-.steps li { font-size: 40px; line-height: 1.25; }
-.credit { position: absolute; left: 128px; bottom: 64px; width: 1664px; font-size: 24px; line-height: 1.4; color: var(--ink); }
+/* ---------- Player chrome: hairline progress, overview grid, notes + timer ---------- */
+#progress {
+  position: fixed; left: 0; bottom: 0; height: 3px; width: 0%;
+  background: linear-gradient(90deg, #C77E20, var(--amber));
+  box-shadow: 0 0 12px rgba(245, 182, 97, 0.65);
+  transition: width 420ms cubic-bezier(.22, .8, .24, 1), opacity 300ms;
+  z-index: 40; pointer-events: none;
+}
+#progress.is-backup { opacity: 0.35; }
 
-/* ---------- offline player ---------- */
-html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-body { cursor: default; }
-body.idle { cursor: none; }
-#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
-#stage > section { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; }
-#stage > section:not(.active) { display: none !important; }
-#stage > section.active { animation: slidein 450ms ease-out; }
-@keyframes slidein { from { opacity: 0; } }
-video.bleed { pointer-events: none; }
-#notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 38vh; overflow: auto; padding: 14px 20px 18px;
-  background: rgba(14, 13, 16, .94); color: #F3EEE6; font: 17px/1.5 -apple-system, "Helvetica Neue", Arial, sans-serif;
-  border-top: 1px solid rgba(245, 182, 97, .4); display: none; }
-#notes b { color: #F5B661; font-weight: 600; margin-right: 10px; }
+#jump-toast {
+  position: fixed; top: 22px; right: 24px; z-index: 60;
+  padding: 10px 18px; border-radius: 12px;
+  background: rgba(14, 13, 18, 0.92); border: 1px solid rgba(245, 182, 97, 0.45);
+  color: var(--amber); font: 600 18px/1.2 'Inter Tight', sans-serif;
+  opacity: 0; transform: translateY(-8px); pointer-events: none;
+  transition: opacity 180ms, transform 180ms;
+}
+#jump-toast.show { opacity: 1; transform: none; }
+
+#overview {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(8, 8, 11, 0.94); backdrop-filter: blur(16px);
+  display: none; flex-direction: column; padding: 36px 48px; overflow: auto;
+}
+body.show-overview #overview { display: flex; }
+.ov-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; color: var(--ivory); }
+.ov-head h2 { font-size: 40px; }
+.ov-head span { font-size: 16px; color: var(--mute); }
+.ov-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.ov-card {
+  padding: 22px 24px; border-radius: 14px; cursor: pointer; text-align: left;
+  background: rgba(243, 238, 230, 0.045); border: 1px solid rgba(243, 238, 230, 0.14);
+  color: var(--ivory); transition: transform 160ms, border-color 160ms, background 160ms;
+}
+.ov-card:hover { transform: translateY(-3px); border-color: var(--amber); background: rgba(245, 182, 97, 0.10); }
+.ov-card.current { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.ov-card.backup { border-style: dashed; opacity: 0.82; }
+.ov-tag { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amber); font-weight: 600; margin-bottom: 8px; }
+.ov-name { font-family: 'Instrument Serif', Georgia, serif; font-size: 30px; line-height: 1.1; }
+
+#notes {
+  position: fixed; left: 0; right: 0; bottom: 0; max-height: 40vh; overflow: auto;
+  padding: 16px 24px 20px; z-index: 50;
+  background: rgba(12, 11, 15, 0.95); color: #F3EEE6;
+  font: 17px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif;
+  border-top: 1px solid rgba(245, 182, 97, 0.45); display: none;
+  backdrop-filter: blur(12px);
+}
+.notes-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(243, 238, 230, 0.10);
+}
+.notes-bar b { color: var(--amber); font-weight: 600; font-size: 16px; }
+.timer-wrap { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; font-size: 15px; color: var(--mute); }
+.timer-clock { font-weight: 600; font-size: 18px; color: var(--ivory); }
+.timer-clock.warn { color: var(--amber); }
+.timer-clock.over { color: #F07167; }
+.timer-btn {
+  border: 1px solid rgba(243, 238, 230, 0.22); background: rgba(243, 238, 230, 0.06);
+  color: var(--ivory); padding: 4px 10px; border-radius: 6px; font-size: 13px; cursor: pointer;
+}
+.timer-btn:hover { border-color: var(--amber); }
 body.show-notes #notes { display: block; }
-#help { position: fixed; right: 14px; bottom: 12px; color: rgba(243, 238, 230, .55); font: 13px/1.4 -apple-system, Arial, sans-serif;
-  background: rgba(0, 0, 0, .55); padding: 6px 10px; border-radius: 6px; transition: opacity .6s; }
+
+#help {
+  position: fixed; right: 16px; bottom: 14px; z-index: 45;
+  color: rgba(243, 238, 230, 0.62); font: 13px/1.4 -apple-system, Arial, sans-serif;
+  background: rgba(10, 10, 14, 0.65); border: 1px solid rgba(243, 238, 230, 0.10);
+  padding: 6px 12px; border-radius: 8px; transition: opacity 0.6s;
+  backdrop-filter: blur(8px);
+}
 body.idle #help { opacity: 0; }
+body.show-notes #help { bottom: auto; top: 14px; }
 </style>
 </head>
 <body>
 <div id="stage">
+
+<!-- SLIDE 1: COVER -->
 <section id="cover" data-transition="fade">
-<video class="bleed film" src="media/hall.mp4" poster="media/hall.jpg" muted loop playsinline preload="auto"></video>
-<div class="veil-b"></div>
-<p class="eyebrow cover-eyebrow rise" style="--i:3">SONIC Lab · Politecnico di Torino · MUSMET</p>
-<h1 class="cover-title bloom" style="--i:1">Director</h1>
-<p class="cover-line rise" style="--i:4">Conduct an orchestra that isn’t in the room.</p>
-<p class="cover-by rise" style="--i:5">Arman Naseri Far, with Prof. Cristina Rottondi, Dr. Leonardo Severi and Dr. Matteo Sacchetto</p>
-
+  <video class="bleed film" src="media/hall.mp4" poster="media/hall.jpg" muted loop playsinline preload="auto"></video>
+  <div class="veil-b"></div>
+  <div class="cover-glow"></div>
+  <p class="eyebrow cover-eyebrow rise" style="--i:2">SONIC Lab · Politecnico di Torino · MUSMET</p>
+  <h1 class="cover-title bloom" style="--i:0">Director</h1>
+  <p class="cover-line rise" style="--i:3">Conduct an orchestra that isn’t in the room.</p>
+  <div class="cover-rule rise" style="--i:4"></div>
+  <p class="cover-by rise" style="--i:4">Arman Naseri Far, with Prof. Cristina Rottondi, Dr. Leonardo Severi and Dr. Matteo Sacchetto</p>
 </section>
+
+<!-- SLIDE 2: PROBLEM -->
 <section id="problem" data-transition="magic">
-<h2 class="statement rise">Musicians can already play together from far apart. <i>Nobody can conduct them.</i></h2>
-<p id="w-gesture" class="word off rise" style="left:128px; --i:2">Gesture</p>
-<p id="w-room" class="word off rise" style="left:688px; --i:3">Room</p>
-<p id="w-place" class="word off rise" style="left:1248px; --i:4">Place</p>
-<p class="cap rise" style="left:128px; --i:3">On a video call there is no beat to follow: the picture is late, flat and small.</p>
-<p class="cap rise" style="left:688px; --i:4">Nobody shares a space: no podium, no rows, no eye contact.</p>
-<p class="cap rise" style="left:1248px; --i:5">Every voice comes from one point. You can’t hear who is where.</p>
+  <div class="stage-ambient"></div>
+  <h2 class="statement rise">Musicians can already play together from far apart. <i>Nobody can conduct them.</i></h2>
 
+  <!-- Minimalist muted motifs -->
+  <svg class="col-motif off motif" style="left:128px; --i:1" viewBox="0 0 84 52" fill="none">
+    <path d="M8 38 L32 38 M42 38 L58 38 M68 38 L78 38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 8"/>
+  </svg>
+  <svg class="col-motif off motif" style="left:688px; --i:2" viewBox="0 0 84 52" fill="none">
+    <circle cx="14" cy="36" r="4" stroke="currentColor" stroke-width="2"/>
+    <circle cx="42" cy="18" r="4" stroke="currentColor" stroke-width="2"/>
+    <circle cx="70" cy="36" r="4" stroke="currentColor" stroke-width="2"/>
+  </svg>
+  <svg class="col-motif off motif" style="left:1248px; --i:3" viewBox="0 0 84 52" fill="none">
+    <circle cx="42" cy="28" r="5" fill="currentColor"/>
+    <circle cx="42" cy="28" r="14" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 5"/>
+  </svg>
+
+  <div class="col-rule rise" style="left:128px; --i:2"></div>
+  <div class="col-rule rise" style="left:688px; --i:3"></div>
+  <div class="col-rule rise" style="left:1248px; --i:4"></div>
+
+  <p id="w-gesture" class="word off rise" style="left:128px; --i:2">Gesture</p>
+  <p id="w-room" class="word off rise" style="left:688px; --i:3">Room</p>
+  <p id="w-place" class="word off rise" style="left:1248px; --i:4">Place</p>
+  <p class="cap rise" style="left:128px; --i:3">On a video call there is no beat to follow: the picture is late, flat and small.</p>
+  <p class="cap rise" style="left:688px; --i:4">Nobody shares a space: no podium, no rows, no eye contact.</p>
+  <p class="cap rise" style="left:1248px; --i:5">Every voice comes from one point. You can’t hear who is where.</p>
 </section>
+
+<!-- SLIDE 3: ANSWER -->
 <section id="answer" class="paper" data-transition="fade">
-<h2 class="ans-title rise">Director gives the conductor all three back.</h2>
-<div class="tick rise" style="left:128px; --i:2"></div>
-<div class="tick rise" style="left:688px; --i:3"></div>
-<div class="tick rise" style="left:1248px; --i:4"></div>
-<p id="w-gesture" class="word on" style="left:128px">Gesture</p>
-<p id="w-room" class="word on" style="left:688px">Room</p>
-<p id="w-place" class="word on" style="left:1248px">Place</p>
-<p class="ans-h rise" style="left:128px; --i:3">The conductor’s head and hands reach every musician, live.</p>
-<p class="ans-h rise" style="left:688px; --i:4">One rehearsal hall, shared by everyone.</p>
-<p class="ans-h rise" style="left:1248px; --i:5">Every musician is heard from their own chair.</p>
-<p class="ans-p rise" style="left:128px; --i:4">Sent from the headset, not filmed by a camera.</p>
-<p class="ans-p rise" style="left:688px; --i:5">The conductor on the podium, each musician in a chair, playing.</p>
-<p class="ans-p rise" style="left:1248px; --i:6">The sound follows the conductor’s head, as in a real hall.</p>
-<p class="ans-foot rise" style="--i:6">Built on the lab’s low-latency audio, so the music itself stays in time.</p>
+  <h2 class="ans-title rise">Director gives the conductor all three back.</h2>
 
+  <!-- Luminous deep-amber motifs that draw in -->
+  <svg class="col-motif on motif" style="left:128px; --i:1" viewBox="0 0 84 52" fill="none">
+    <path d="M10 40 C22 10, 38 42, 52 16 C60 4, 70 14, 76 8" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
+    <circle cx="76" cy="8" r="4" fill="currentColor"/>
+  </svg>
+  <svg class="col-motif on motif" style="left:688px; --i:2" viewBox="0 0 84 52" fill="none">
+    <path d="M10 38 A34 34 0 0 1 74 38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M22 38 A22 22 0 0 1 62 38" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
+    <circle cx="42" cy="42" r="4.5" fill="currentColor"/>
+  </svg>
+  <svg class="col-motif on motif" style="left:1248px; --i:3" viewBox="0 0 84 52" fill="none">
+    <circle cx="22" cy="36" r="5" fill="currentColor"/>
+    <path d="M36 22 A22 22 0 0 1 36 48" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M48 14 A34 34 0 0 1 48 50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity="0.72"/>
+    <path d="M60 8 A44 44 0 0 1 60 50" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.45"/>
+  </svg>
+
+  <div class="tick tick-draw" style="left:128px; --i:2"></div>
+  <div class="tick tick-draw" style="left:688px; --i:3"></div>
+  <div class="tick tick-draw" style="left:1248px; --i:4"></div>
+
+  <p id="w-gesture" class="word on" style="left:128px">Gesture</p>
+  <p id="w-room" class="word on" style="left:688px">Room</p>
+  <p id="w-place" class="word on" style="left:1248px">Place</p>
+
+  <p class="ans-h rise" style="left:128px; --i:3">The conductor’s head and hands reach every musician, live.</p>
+  <p class="ans-h rise" style="left:688px; --i:4">One rehearsal hall, shared by everyone.</p>
+  <p class="ans-h rise" style="left:1248px; --i:5">Every musician is heard from their own chair.</p>
+  <p class="ans-p rise" style="left:128px; --i:4">Sent from the headset, not filmed by a camera.</p>
+  <p class="ans-p rise" style="left:688px; --i:5">The conductor on the podium, each musician in a chair, playing.</p>
+  <p class="ans-p rise" style="left:1248px; --i:6">The sound follows the conductor’s head, as in a real hall.</p>
+  <div class="ans-foot rise" style="--i:6"><span class="ans-foot-dot"></span>Built on the lab’s low-latency audio, so the music itself stays in time.</div>
 </section>
+
+<!-- SLIDE 4: PODIUM -->
 <section id="podium" data-transition="fade">
-<img class="bleed push" src="media/podium.jpg" alt="The conductor’s podium in the hall: a music stand with the score on a red rug, the ensemble seated beyond it.">
-<div class="veil-l"></div>
-<div class="over">
-<p class="eyebrow rise">The conductor</p>
-<h2 class="rise" style="--i:1">Puts on a headset. Steps onto the podium.</h2>
-</div>
-<div class="over-lines">
-<p class="rise" style="--i:3">Turns the score pages on the stand.</p>
-<p class="rise" style="--i:4">Starts and stops the rehearsal.</p>
-<p class="rise" style="--i:5">Head and hands reach every musician.</p>
-</div>
-
+  <img class="bleed push" src="media/podium.jpg" alt="The conductor’s podium with sheet music on the stand and the ensemble playing beyond it.">
+  <div class="veil-l"></div>
+  <div class="over">
+    <p class="eyebrow rise">The conductor</p>
+    <h2 class="rise" style="--i:1">Puts on a headset. Steps onto the podium.</h2>
+  </div>
+  <div class="over-lines">
+    <p class="rise" style="--i:3">Turns the score pages on the stand.</p>
+    <p class="rise" style="--i:4">Starts and stops the rehearsal.</p>
+    <p class="rise" style="--i:5">Head and hands reach every musician.</p>
+  </div>
 </section>
+
+<!-- SLIDE 5: GESTURE (MUSICIAN VIEW) -->
 <section id="gesture" data-transition="fade">
-<video class="bleed film" src="media/gesture.mp4" poster="media/gesture.jpg" muted loop playsinline preload="auto"></video>
-<div class="veil-l"></div>
-<div class="gest-over">
-<p class="eyebrow rise">What a musician sees</p>
-<h2 class="rise" style="--i:1">The conductor’s beat, and a look your way.</h2>
-<p class="sub rise" style="--i:3">Head, hands, eyes and face come from the headset as they move. Musicians follow a person, not a video.</p>
-</div>
-
+  <video class="bleed film" src="media/gesture.mp4" poster="media/gesture.jpg" muted loop playsinline preload="auto"></video>
+  <div class="veil-l"></div>
+  <div class="badge-pill rise" style="--i:2"><span class="dot"></span>Cellist’s chair · live avatar view</div>
+  <div class="gest-over">
+    <p class="eyebrow rise">What a musician sees</p>
+    <h2 class="rise" style="--i:1">The conductor’s beat, and a look your way.</h2>
+    <p class="sub rise" style="--i:3">Head, hands, eyes and face come from the headset as they move. Musicians follow a person, not a video.</p>
+  </div>
+  <div class="gest-chip rise" style="--i:4"><span>Quest Pro</span> · head, hands, eye gaze &amp; 52 facial expressions</div>
 </section>
+
+<!-- SLIDE 6: ENSEMBLE -->
 <section id="ensemble" data-transition="fade">
-<video class="bleed film" src="media/ensemble.mp4" poster="media/ensemble.jpg" muted loop playsinline preload="auto"></video>
-<div class="veil-b"></div>
-<div class="low">
-<p class="eyebrow rise">The ensemble</p>
-<h2 class="rise" style="--i:1">Every musician in their chair, playing their part.</h2>
-<p class="sub rise" style="--i:3">Ten sections, from strings to drums. Each looks the way they chose and plays in time with the others.</p>
-</div>
-
+  <video class="bleed film" src="media/ensemble.mp4" poster="media/ensemble.jpg" muted loop playsinline preload="auto"></video>
+  <div class="veil-b"></div>
+  <div class="badge-pill rise" style="--i:2"><span class="dot"></span>All 10 sections · 72 fps on Quest Pro</div>
+  <div class="low">
+    <p class="eyebrow rise">The ensemble</p>
+    <h2 class="rise" style="--i:1">Every musician in their chair, playing their part.</h2>
+    <p class="sub rise" style="--i:3">Ten sections, from strings to drums. Each looks the way they chose and plays in time with the others.</p>
+  </div>
 </section>
-<section id="seat" data-transition="fade">
-<div class="side">
-<p class="eyebrow rise">The musician</p>
-<h2 class="rise" style="--i:1">Opens a link. Picks a chair.</h2>
-<p class="body rise" style="--i:2">The chair they choose is <b>where the conductor sees them</b>, and <b>where their sound comes from.</b></p>
-<p class="body rise" style="--i:3">A browser for the picture, a small audio box for the sound.</p>
-</div>
-<img class="shot bloom" style="--i:2" src="media/seat.jpg" alt="The seat page: the hall from the podium with a marker on every chair, and a mirror on the right showing the chosen look.">
-<iframe class="embed" style="position:absolute; left:704px; top:234px; width:1088px; height:612px; border:0; background:transparent" sandbox="allow-scripts" data-src="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block;width:100%;height:100%}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;canvas id=&quot;c&quot;&gt;&lt;/canvas&gt;&lt;script&gt;
-(function(){
-var cv=document.getElementById(&#x27;c&#x27;),g=cv.getContext(&#x27;2d&#x27;),LW=1088,LH=612,lastT=0,R=Math.PI/180;
-var IV=&#x27;#F3EEE6&#x27;,MU=&#x27;#A39C92&#x27;,AM=&#x27;#F5B661&#x27;,AMD=&#x27;#9A5B12&#x27;,INK=&#x27;#17151A&#x27;,SANS=&#x27;-apple-system,&quot;Helvetica Neue&quot;,Arial,sans-serif&#x27;;
-function size(){var r=cv.getBoundingClientRect(),w=r.width||LW,h=r.height||LH,s=Math.min(w/LW,h/LH),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(h*d);g.setTransform(d*s,0,0,d*s,d*(w-LW*s)/2,d*(h-LH*s)/2);}
-function ease(s){s=Math.max(0,Math.min(1,s));return s*s*(3-2*s);}
-function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function dot(x,y,r,c){g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
-function ring(x,y,r,c,w){g.strokeStyle=c;g.lineWidth=w||2;g.beginPath();g.arc(x,y,r,0,7);g.stroke();}
-function rgba(h,a){var n=parseInt(h.slice(1),16);return &#x27;rgba(&#x27;+(n&gt;&gt;16)+&#x27;,&#x27;+((n&gt;&gt;8)&amp;255)+&#x27;,&#x27;+(n&amp;255)+&#x27;,&#x27;+Math.max(0,Math.min(1,a)).toFixed(3)+&#x27;)&#x27;;}
-function clear(){g.clearRect(-50,-50,LW+100,LH+100);}
-// A pointer chooses the saxophone chair and enters (marker positions measured on the screenshot).
-var P0=[430,470],PIA=[516,237],SAX=[604,267],ENT=[975,556],BTN=[885,541,180,30],T=9;
-function lerp(a,b,s){s=ease(s);return[a[0]+(b[0]-a[0])*s,a[1]+(b[1]-a[1])*s];}
-function where(t){if(t&lt;1.2)return P0;if(t&lt;2.4)return lerp(P0,PIA,(t-1.2)/1.2);if(t&lt;2.8)return PIA;if(t&lt;3.5)return lerp(PIA,SAX,(t-2.8)/0.7);if(t&lt;4.3)return SAX;if(t&lt;5.5)return lerp(SAX,ENT,(t-4.3)/1.2);return ENT;}
-function arrow(x,y,a){g.save();g.globalAlpha=a;g.translate(x,y);g.shadowColor=&#x27;rgba(0,0,0,0.6)&#x27;;g.shadowBlur=10;g.beginPath();g.moveTo(0,0);g.lineTo(0,30);g.lineTo(8,23);g.lineTo(14,36);g.lineTo(19,34);g.lineTo(13,21);g.lineTo(23,21);g.closePath();g.fillStyle=IV;g.fill();g.shadowBlur=0;g.strokeStyle=INK;g.lineWidth=2;g.stroke();g.restore();}
-function draw(t){clear();t=t%T;var a=t&lt;0.6?t/0.6:t&gt;8.2?Math.max(0,(9-t)/0.8):1;
-if(t&gt;2.4&amp;&amp;t&lt;2.9)ring(PIA[0],PIA[1],16,rgba(IV,0.5*a),2);
-if(t&gt;3.5){var c=t-3.5;if(c&lt;0.8)ring(SAX[0],SAX[1],14+c*60,rgba(AM,0.8*(1-c/0.8)),3);g.save();g.shadowColor=rgba(AM,0.9);g.shadowBlur=24;ring(SAX[0],SAX[1],24,rgba(AM,0.8*a),3);g.restore();}
-if(t&gt;5.6){var e=t-5.6;g.save();g.shadowColor=rgba(AM,0.9);g.shadowBlur=30;rr(BTN[0]-4,BTN[1]-4,BTN[2]+8,BTN[3]+8,10);g.strokeStyle=rgba(AM,0.9*a);g.lineWidth=3;g.stroke();g.restore();if(e&lt;0.8)ring(ENT[0],ENT[1],10+e*70,rgba(AM,0.8*(1-e/0.8)),3);}
-var p=where(t);arrow(p[0],p[1],a);}
 
-size();draw(5.9);window.addEventListener(&#x27;resize&#x27;,function(){size();draw(lastT);});
-var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;prev=now;lastT=(now-t0)/1000;draw(lastT);requestAnimationFrame(frame);}requestAnimationFrame(frame);
-})();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
-
+<!-- SLIDE 7: SEAT PAGE (LIVE 3D RECORDING) -->
+<section id="seat" class="stage" data-transition="fade">
+  <div class="side">
+    <p class="eyebrow rise">The musician</p>
+    <h2 class="rise" style="--i:1">Opens a link. Picks a chair.</h2>
+    <p class="body rise" style="--i:2">The chair they choose is <b>where the conductor sees them</b>, and <b>where their sound comes from.</b></p>
+    <p class="body rise" style="--i:3">A browser for the picture, a small audio box for the sound.</p>
+  </div>
+  <div class="browser-frame bloom" style="--i:2">
+    <div class="browser-bar">
+      <span class="b-dot hi"></span><span class="b-dot"></span><span class="b-dot"></span>
+      <span class="b-url">director / take-your-seat</span>
+      <span class="b-live"><i></i>3D Hall</span>
+    </div>
+    <div class="browser-media">
+      <video src="media/seat.mp4" poster="media/seat.jpg" muted loop playsinline preload="auto"></video>
+    </div>
+  </div>
 </section>
+
+<!-- SLIDE 8: SPATIAL SOUND (HERO SLIDE WITH LIVE SYNCED METER + CONTROLS) -->
 <section id="sound" data-transition="fade">
-<div class="side">
-<p class="eyebrow rise">Spatial sound</p>
-<h2 class="rise" style="--i:1">Turn your head. The sound stays in the chair.</h2>
-<p class="body rise" style="--i:2">In front or behind, left or right, above or below: each musician is heard <b>from where they sit</b>, as in a real hall.</p>
-<p class="body rise" style="--i:3"><b>Listen:</b> the piano plays through our spatial engine as the head turns. Levels shown are the ones measured in the lab.</p>
-</div>
-<video class="film" src="media/sound.mp4" poster="media/sound.jpg" style="position:absolute; left:704px; top:128px; width:1088px; height:824px; object-fit:contain" loop playsinline preload="auto"></video>
+  <div class="side" style="height: 840px;">
+    <p class="eyebrow rise">Spatial sound</p>
+    <h2 class="rise" style="--i:1">Turn your head. The sound stays in the chair.</h2>
+    <p class="body rise" style="--i:2">In front or behind, left or right, above or below: each musician is heard <b>from where they sit</b>, as in a real hall.</p>
+    <p class="body rise" style="--i:3"><b>Listen:</b> the piano plays through our spatial engine as the head turns. Levels shown are the ones measured in the lab.</p>
 
+    <div class="sound-panel rise" style="--i:4">
+      <div class="sound-panel-head">
+        <span>Live stereo balance</span>
+        <span class="sound-phase" id="sound-phase">Looking straight</span>
+      </div>
+      <div class="vu-row">
+        <span>L</span>
+        <div class="vu-track"><div class="vu-fill l" id="vu-l"></div></div>
+        <span class="vu-val" id="vu-l-txt">24%</span>
+      </div>
+      <div class="vu-row">
+        <span>R</span>
+        <div class="vu-track"><div class="vu-fill r" id="vu-r"></div></div>
+        <span class="vu-val" id="vu-r-txt">76%</span>
+      </div>
+      <div class="sound-controls">
+        <button class="ctrl-btn" type="button" id="btn-replay">Replay (R)</button>
+        <button class="ctrl-btn" type="button" id="btn-mute">Sound on (M)</button>
+        <div class="sound-prog"><div class="sound-prog-fill" id="sound-prog"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sound-video-wrap bloom" style="--i:1">
+    <video id="sound-video" src="media/sound.mp4" poster="media/sound.jpg" loop playsinline preload="auto"></video>
+  </div>
 </section>
-<section id="session" data-transition="fade">
-<div class="side">
-<p class="eyebrow rise">Whoever runs it</p>
-<h2 class="rise" style="--i:1">One page to run the rehearsal.</h2>
-<p class="body rise" style="--i:2"><b>Who is in, whose sound is connected,</b> and whether the conductor is ready.</p>
-<p class="body rise" style="--i:3">A new audio box is named with one click. The top line says when to start.</p>
-</div>
-<img class="shot bloom" style="--i:2" src="media/session.jpg" alt="The session page: ‘Ready to rehearse’ at the top, the hall, a card per section with the musician’s portrait and status, and the conductor’s checks on the right.">
-<iframe class="embed" style="position:absolute; left:704px; top:234px; width:1088px; height:612px; border:0; background:transparent" sandbox="allow-scripts" data-src="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block;width:100%;height:100%}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;canvas id=&quot;c&quot;&gt;&lt;/canvas&gt;&lt;script&gt;
-(function(){
-var cv=document.getElementById(&#x27;c&#x27;),g=cv.getContext(&#x27;2d&#x27;),LW=1088,LH=612,lastT=0,R=Math.PI/180;
-var IV=&#x27;#F3EEE6&#x27;,MU=&#x27;#A39C92&#x27;,AM=&#x27;#F5B661&#x27;,AMD=&#x27;#9A5B12&#x27;,INK=&#x27;#17151A&#x27;,SANS=&#x27;-apple-system,&quot;Helvetica Neue&quot;,Arial,sans-serif&#x27;;
-function size(){var r=cv.getBoundingClientRect(),w=r.width||LW,h=r.height||LH,s=Math.min(w/LW,h/LH),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(h*d);g.setTransform(d*s,0,0,d*s,d*(w-LW*s)/2,d*(h-LH*s)/2);}
-function ease(s){s=Math.max(0,Math.min(1,s));return s*s*(3-2*s);}
-function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function dot(x,y,r,c){g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
-function ring(x,y,r,c,w){g.strokeStyle=c;g.lineWidth=w||2;g.beginPath();g.arc(x,y,r,0,7);g.stroke();}
-function rgba(h,a){var n=parseInt(h.slice(1),16);return &#x27;rgba(&#x27;+(n&gt;&gt;16)+&#x27;,&#x27;+((n&gt;&gt;8)&amp;255)+&#x27;,&#x27;+(n&amp;255)+&#x27;,&#x27;+Math.max(0,Math.min(1,a)).toFixed(3)+&#x27;)&#x27;;}
-function clear(){g.clearRect(-50,-50,LW+100,LH+100);}
-// Audio boxes come online one by one (the page&#x27;s own messages), then &quot;Ready to rehearse&quot; lights.
-var MSG=[[&#x27;Conductor’s sound connected&#x27;,366],[&#x27;Piano is ready, sound connected&#x27;,382],[&#x27;Sax is ready, sound connected&#x27;,413],[&#x27;Vln + Vla is ready, sound connected&#x27;,430]],STEP=2.1,T=MSG.length*STEP+2.6,PILL=[457,11,141,34];
-function draw(t){clear();t=t%T;var i=Math.floor(t/STEP);
-if(i&lt;MSG.length){var l=t-i*STEP,a=l&lt;0.35?l/0.35:l&gt;STEP-0.35?(STEP-l)/0.35:1,dx=(1-ease(Math.min(1,l/0.35)))*-24;
-g.save();g.globalAlpha=a;g.translate(dx,0);g.shadowColor=&#x27;rgba(0,0,0,0.6)&#x27;;g.shadowBlur=24;rr(40,384,450,62,14);g.fillStyle=&#x27;rgba(28,25,31,0.94)&#x27;;g.fill();g.shadowBlur=0;g.strokeStyle=rgba(AM,0.5);g.lineWidth=1.5;g.stroke();
-g.shadowColor=rgba(&#x27;#7BD88F&#x27;,0.9);g.shadowBlur=12;dot(70,415,7,&#x27;#7BD88F&#x27;);g.shadowBlur=0;g.fillStyle=IV;g.font=&#x27;500 24px &#x27;+SANS;g.textBaseline=&#x27;middle&#x27;;g.fillText(MSG[i][0],92,416);g.restore();
-var y=MSG[i][1];g.fillStyle=rgba(AM,0.18*a);rr(893,y-9,186,18,6);g.fill();}
-else{var l2=t-MSG.length*STEP,b=Math.sin(Math.min(1,l2/2.6)*Math.PI);g.save();g.shadowColor=rgba(AM,0.95);g.shadowBlur=34*b;rr(PILL[0]-5,PILL[1]-5,PILL[2]+10,PILL[3]+10,22);g.strokeStyle=rgba(AM,0.9*b);g.lineWidth=3;g.stroke();g.restore();}}
 
-size();draw(4.6);window.addEventListener(&#x27;resize&#x27;,function(){size();draw(lastT);});
-var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;prev=now;lastT=(now-t0)/1000;draw(lastT);requestAnimationFrame(frame);}requestAnimationFrame(frame);
-})();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
-
+<!-- SLIDE 9: SESSION PAGE (LIVE 3D RECORDING) -->
+<section id="session" class="stage" data-transition="fade">
+  <div class="side">
+    <p class="eyebrow rise">Whoever runs it</p>
+    <h2 class="rise" style="--i:1">One page to run the rehearsal.</h2>
+    <p class="body rise" style="--i:2"><b>Who is in, whose sound is connected,</b> and whether the conductor is ready.</p>
+    <p class="body rise" style="--i:3">A new audio box is named with one click. The top line says when to start.</p>
+  </div>
+  <div class="browser-frame bloom" style="--i:2">
+    <div class="browser-bar">
+      <span class="b-dot hi"></span><span class="b-dot"></span><span class="b-dot"></span>
+      <span class="b-url">director / session</span>
+      <span class="b-live"><i></i>Ready</span>
+    </div>
+    <div class="browser-media">
+      <video src="media/session.mp4" poster="media/session.jpg" muted loop playsinline preload="auto"></video>
+    </div>
+  </div>
 </section>
+
+<!-- SLIDE 10: NUMBERS -->
 <section id="numbers" class="stage" data-transition="fade">
-<p class="eyebrow rise">Measured in the Sonic Lab, November</p>
-<h2 class="nums-title rise" style="--i:1">It works end to end.</h2>
-<iframe class="embed" style="position:absolute; left:128px; top:290px; width:1664px; height:200px; border:0; background:transparent" sandbox="allow-scripts" data-src="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block;width:100%;height:100%}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;canvas id=&quot;c&quot;&gt;&lt;/canvas&gt;&lt;script&gt;
-(function(){
-var cv=document.getElementById(&#x27;c&#x27;),g=cv.getContext(&#x27;2d&#x27;),LW=1664,LH=200,lastT=0,R=Math.PI/180;
-var IV=&#x27;#F3EEE6&#x27;,MU=&#x27;#A39C92&#x27;,AM=&#x27;#F5B661&#x27;,AMD=&#x27;#9A5B12&#x27;,INK=&#x27;#17151A&#x27;,SANS=&#x27;-apple-system,&quot;Helvetica Neue&quot;,Arial,sans-serif&#x27;;
-function size(){var r=cv.getBoundingClientRect(),w=r.width||LW,h=r.height||LH,s=Math.min(w/LW,h/LH),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(h*d);g.setTransform(d*s,0,0,d*s,d*(w-LW*s)/2,d*(h-LH*s)/2);}
-function ease(s){s=Math.max(0,Math.min(1,s));return s*s*(3-2*s);}
-function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function dot(x,y,r,c){g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
-function ring(x,y,r,c,w){g.strokeStyle=c;g.lineWidth=w||2;g.beginPath();g.arc(x,y,r,0,7);g.stroke();}
-function rgba(h,a){var n=parseInt(h.slice(1),16);return &#x27;rgba(&#x27;+(n&gt;&gt;16)+&#x27;,&#x27;+((n&gt;&gt;8)&amp;255)+&#x27;,&#x27;+(n&amp;255)+&#x27;,&#x27;+Math.max(0,Math.min(1,a)).toFixed(3)+&#x27;)&#x27;;}
-function clear(){g.clearRect(-50,-50,LW+100,LH+100);}
-// 9 ms there and back, shown 400 times slower (3.6 s), three times, then at rest.
-var RT=3.6,L=[0,50,260,100],RB=[1404,50,260,100],Y=100,X0=260,X1=1404;
-function box(b,a){rr(b[0],b[1],b[2],b[3],16);g.fillStyle=rgba(IV,0.04+0.08*a);g.fill();g.save();g.shadowColor=rgba(AM,0.9);g.shadowBlur=30*a;g.strokeStyle=a&gt;0.02?rgba(AM,0.35+0.6*a):rgba(IV,0.28);g.lineWidth=2;g.stroke();g.restore();}
-function draw(t){clear();var run=t&lt;3*RT,u=run?(t%RT)/RT:1,x,ha=0,la=0;
-if(u&lt;0.5){x=X0+(X1-X0)*ease(u*2);}else{x=X1-(X1-X0)*ease((u-0.5)*2);}
-if(run){var ar=u-0.5;if(ar&gt;=0&amp;&amp;ar&lt;0.12)ha=1-ar/0.12;var back=u;if(back&lt;0.08&amp;&amp;t&gt;RT)la=1-back/0.08;}
-g.strokeStyle=rgba(IV,0.14);g.lineWidth=2;g.beginPath();g.moveTo(X0,Y);g.lineTo(X1,Y);g.stroke();
-if(run){var dir=u&lt;0.5?1:-1;for(var j=1;j&lt;=14;j++){dot(x-dir*j*9,Y,6-j*0.35,rgba(AM,0.5-j*0.033));}g.save();g.shadowColor=rgba(AM,0.95);g.shadowBlur=26;dot(x,Y,8,AM);g.restore();}
-else{g.strokeStyle=rgba(AM,0.55);g.lineWidth=2;g.beginPath();g.moveTo(X0,Y);g.lineTo(X1,Y);g.stroke();}
-box(L,run?la:0.35);box(RB,run?ha:0.35);}
+  <p class="eyebrow rise">Measured in the Sonic Lab, November</p>
+  <h2 class="nums-title rise" style="--i:1">It works end to end.</h2>
 
-size();draw(12);window.addEventListener(&#x27;resize&#x27;,function(){size();draw(lastT);});
-var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;prev=now;lastT=(now-t0)/1000;draw(lastT);requestAnimationFrame(frame);}requestAnimationFrame(frame);
-})();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
-<p class="rt-label rise" style="left:128px; --i:2">Musician’s box</p>
-<p class="rt-label rise" style="left:1532px; --i:2">Conductor’s box</p>
-<p class="rt-cap rise" style="--i:3">9 ms there and back, shown 400 times slower</p>
-<div class="nums">
-<div class="stat rise" style="--i:2"><div class="fig"><p class="n">9</p><p class="unit">ms</p></div><p class="what">Sound there and back between two audio boxes</p><p class="how">Playing together tolerates about 25 ms one way</p></div>
-<div class="stat rise" style="--i:3"><div class="fig"><p class="n">17</p><p class="unit">dB</p></div><p class="what">Between the ears as the conductor turns the head</p><p class="how">Real microphone, real headset</p></div>
-<div class="stat rise" style="--i:4"><div class="fig"><p class="n">72</p><p class="unit">fps</p></div><p class="what">In the headset, all ten sections seated</p><p class="how">Meta Quest Pro, the headset’s full rate</p></div>
-<div class="stat rise" style="--i:5"><div class="fig"><p class="n">8</p><p class="unit">voices</p></div><p class="what">Placed in space at once</p><p class="how">7 ms to place them, on a Raspberry Pi</p></div>
-</div>
+  <div class="latency-stage rise" style="--i:2">
+    <canvas id="latency-canvas" width="1664" height="248"></canvas>
+  </div>
 
+  <div class="nums">
+    <div class="stat rise" style="--i:2">
+      <div class="stat-top">
+        <div class="fig"><p class="n">9</p><p class="unit">ms</p></div>
+        <svg class="stat-icon" viewBox="0 0 54 34" fill="none">
+          <path d="M4 17 H50" stroke="currentColor" stroke-width="2" opacity="0.35"/>
+          <path d="M4 17 L18 17 L23 6 L30 28 L35 17 L50 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="what">Sound there and back between two audio boxes</p>
+      <p class="how">~4.5 ms one way — well inside the 25 ms ensemble limit</p>
+    </div>
+
+    <div class="stat rise" style="--i:3">
+      <div class="stat-top">
+        <div class="fig"><p class="n">17</p><p class="unit">dB</p></div>
+        <svg class="stat-icon" viewBox="0 0 54 34" fill="none">
+          <circle cx="27" cy="24" r="6" stroke="currentColor" stroke-width="2"/>
+          <path d="M36 14 A14 14 0 0 1 36 32" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M43 8 A22 22 0 0 1 43 34" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
+          <path d="M18 18 A10 10 0 0 0 18 30" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.3"/>
+        </svg>
+      </div>
+      <p class="what">Between the ears as the conductor turns the head</p>
+      <p class="how">Real microphone, real headset</p>
+    </div>
+
+    <div class="stat rise" style="--i:4">
+      <div class="stat-top">
+        <div class="fig"><p class="n">72</p><p class="unit">fps</p></div>
+        <svg class="stat-icon" viewBox="0 0 54 34" fill="none">
+          <rect x="4" y="6" width="46" height="22" rx="6" stroke="currentColor" stroke-width="2" opacity="0.45"/>
+          <path d="M11 21 L18 14 L25 19 L34 11 L43 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="what">In the headset, all ten sections seated</p>
+      <p class="how">Meta Quest Pro, the headset’s full rate</p>
+    </div>
+
+    <div class="stat rise" style="--i:5">
+      <div class="stat-top">
+        <div class="fig"><p class="n">8</p><p class="unit">voices</p></div>
+        <svg class="stat-icon" viewBox="0 0 54 34" fill="none">
+          <path d="M7 28 A20 20 0 0 1 47 28" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+          <circle cx="9" cy="24" r="2.4" fill="currentColor"/><circle cx="14" cy="15" r="2.4" fill="currentColor"/>
+          <circle cx="22" cy="10" r="2.4" fill="currentColor"/><circle cx="32" cy="10" r="2.4" fill="currentColor"/>
+          <circle cx="40" cy="15" r="2.4" fill="currentColor"/><circle cx="45" cy="24" r="2.4" fill="currentColor"/>
+          <circle cx="21" cy="21" r="2.4" fill="currentColor" opacity="0.8"/><circle cx="33" cy="21" r="2.4" fill="currentColor" opacity="0.8"/>
+        </svg>
+      </div>
+      <p class="what">Placed in space at once</p>
+      <p class="how">7 ms to place them, on a Raspberry Pi</p>
+    </div>
+  </div>
 </section>
-<section id="demo" class="amber" style="padding:128px 128px 160px">
-<h1 class="demo-title bloom">Your turn.</h1>
-<ol class="steps">
-<li class="rise" style="--i:2">Put on the headset: you are on the podium.</li>
-<li class="rise" style="--i:3">A musician takes a chair from the browser and plays.</li>
-<li class="rise" style="--i:4">Turn your head: the sound stays in the chair.</li>
-<li class="rise" style="--i:5">On the screen, the session page shows who is in.</li>
-</ol>
-<p class="credit">Spatial audio by atmoky (atmoky.com). MUSMET project, SONIC Lab, Politecnico di Torino.</p>
 
+<!-- SLIDE 11: DEMO -->
+<section id="demo" class="amber" style="padding:120px 128px 150px">
+  <svg class="demo-arcs" viewBox="0 0 800 800" fill="none">
+    <circle cx="460" cy="440" r="140" stroke="#17151A" stroke-width="2"/>
+    <circle cx="460" cy="440" r="230" stroke="#17151A" stroke-width="2"/>
+    <circle cx="460" cy="440" r="320" stroke="#17151A" stroke-width="2" stroke-dasharray="10 12"/>
+    <circle cx="460" cy="440" r="410" stroke="#17151A" stroke-width="1.5"/>
+    <circle cx="460" cy="440" r="16" fill="#17151A"/>
+  </svg>
+  <h1 class="demo-title bloom">Your turn.</h1>
+  <ol class="steps">
+    <li class="rise" style="--i:2"><span class="step-num">01</span>Put on the headset: you are on the podium.</li>
+    <li class="rise" style="--i:3"><span class="step-num">02</span>A musician takes a chair from the browser and plays.</li>
+    <li class="rise" style="--i:4"><span class="step-num">03</span>Turn your head: the sound stays in the chair.</li>
+    <li class="rise" style="--i:5"><span class="step-num">04</span>On the screen, the session page shows who is in.</li>
+  </ol>
+  <p class="credit">Spatial audio by atmoky (atmoky.com). MUSMET project, SONIC Lab, Politecnico di Torino.</p>
 </section>
+
+<!-- SLIDE 12: BACKUP ARCHITECTURE WITH LIVE PACKET PULSES -->
 <section id="how" class="stage">
-<p class="eyebrow">Behind the demo</p>
-<h2 class="how-title">How it fits together.</h2>
-<div class="node" style="left:128px; top:400px"><h3>Conductor</h3><p class="node-p">Meta Quest headset: the hall, the score, head and hands.</p></div>
-<div class="node node-hot" style="left:740px; top:400px"><h3>Conductor’s box</h3><p class="node-p">Raspberry Pi: link to the musicians, spatial engine, low-latency audio.</p></div>
-<div class="node" style="left:1352px; top:400px"><h3>Musicians</h3><p class="node-p">A browser for the picture, a small audio box for the sound. Anywhere.</p></div>
-<div class="node node-quiet" style="left:740px; top:712px"><h3>Session server</h3><p class="node-p">Seats, looks, the session page. Brings everyone together.</p></div>
-<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M568 500 L740 500" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M725.6 507.0 L740 500 L725.6 493.0" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M582.4 493.0 L568 500 L582.4 507.0" fill="none" stroke="#F3EEE6" stroke-width="2"/></svg>
-<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1180 470 L1352 470" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M1337.6 477.0 L1352 470 L1337.6 463.0" fill="none" stroke="#F3EEE6" stroke-width="2"/><path d="M1194.4 463.0 L1180 470 L1194.4 477.0" fill="none" stroke="#F3EEE6" stroke-width="2"/></svg>
-<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1180 560 L1352 560" fill="none" stroke="#F5B661" stroke-width="3"/><path d="M1337.6 567.0 L1352 560 L1337.6 553.0" fill="none" stroke="#F5B661" stroke-width="3"/><path d="M1194.4 553.0 L1180 560 L1194.4 567.0" fill="none" stroke="#F5B661" stroke-width="3"/></svg>
-<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M960 640 L960 712" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="10 8"/><path d="M953.0 697.6 L960 712 L967.0 697.6" fill="none" stroke="#6E685F" stroke-width="2"/><path d="M967.0 654.4 L960 640 L953.0 654.4" fill="none" stroke="#6E685F" stroke-width="2"/></svg>
-<svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080"><path d="M1572 640 L1572 790 L1180 790" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="10 8"/><path d="M1194.4 783.0 L1180 790 L1194.4 797.0" fill="none" stroke="#6E685F" stroke-width="2"/><path d="M1579.0 654.4 L1572 640 L1565.0 654.4" fill="none" stroke="#6E685F" stroke-width="2"/></svg>
-<p class="link-label" style="left:520px; top:520px; width:268px">Wi-Fi</p>
-<p class="link-label" style="left:1150px; top:412px; width:232px">gesture</p>
-<p class="link-label hot" style="left:1150px; top:578px; width:232px">sound, 9 ms</p>
+  <p class="eyebrow rise">Behind the demo</p>
+  <h2 class="how-title rise" style="--i:1">How it fits together.</h2>
 
+  <div class="node rise" style="left:128px; top:390px; --i:2">
+    <h3>Conductor</h3>
+    <p class="node-p">Meta Quest headset: the hall, the score, head, hands and face.</p>
+  </div>
+  <div class="node node-hot rise" style="left:740px; top:390px; --i:3">
+    <h3>Conductor’s box</h3>
+    <p class="node-p">Raspberry Pi: link to the musicians, spatial engine, low-latency audio.</p>
+  </div>
+  <div class="node rise" style="left:1352px; top:390px; --i:4">
+    <h3>Musicians</h3>
+    <p class="node-p">A browser for the picture, a small audio box for the sound. Anywhere.</p>
+  </div>
+  <div class="node node-quiet rise" style="left:740px; top:716px; --i:5">
+    <h3>Session server</h3>
+    <p class="node-p">Seats, looks, the session page. Brings everyone together.</p>
+  </div>
+
+  <!-- Live animated architectural links -->
+  <svg style="position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080">
+    <defs>
+      <filter id="glow-amber" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- Wi-Fi: Conductor <-> Box -->
+    <path id="p-wifi" d="M568 492 L740 492" fill="none" stroke="rgba(243,238,230,0.45)" stroke-width="2.5"/>
+    <path d="M726 499 L740 492 L726 485 M582 485 L568 492 L582 499" fill="none" stroke="#F3EEE6" stroke-width="2"/>
+    <circle r="5" fill="#F3EEE6" filter="url(#glow-amber)">
+      <animateMotion dur="1.8s" repeatCount="indefinite" path="M568 492 L740 492"/>
+    </circle>
+
+    <!-- Gesture (WebRTC): Box -> Musicians -->
+    <path id="p-gest" d="M1180 462 L1352 462" fill="none" stroke="rgba(243,238,230,0.45)" stroke-width="2.5"/>
+    <path d="M1338 469 L1352 462 L1338 455 M1194 455 L1180 462 L1194 469" fill="none" stroke="#F3EEE6" stroke-width="2"/>
+    <circle r="5" fill="#F3EEE6" filter="url(#glow-amber)">
+      <animateMotion dur="1.7s" repeatCount="indefinite" path="M1180 462 L1352 462"/>
+    </circle>
+
+    <!-- Sound 9ms: Musicians <-> Box (amber glow, fast) -->
+    <path id="p-snd" d="M1352 554 L1180 554" fill="none" stroke="#F5B661" stroke-width="3.2"/>
+    <path d="M1338 561 L1352 554 L1338 547 M1194 547 L1180 554 L1194 561" fill="none" stroke="#F5B661" stroke-width="3"/>
+    <circle r="6.5" fill="#F5B661" filter="url(#glow-amber)">
+      <animateMotion dur="0.95s" repeatCount="indefinite" path="M1352 554 L1180 554"/>
+    </circle>
+    <circle r="4.5" fill="#F5B661" opacity="0.65">
+      <animateMotion dur="0.95s" begin="0.48s" repeatCount="indefinite" path="M1180 554 L1352 554"/>
+    </circle>
+
+    <!-- Signaling: Box <-> Server -->
+    <path d="M960 634 L960 716" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="9 8"/>
+    <path d="M953 702 L960 716 L967 702 M967 648 L960 634 L953 648" fill="none" stroke="#6E685F" stroke-width="2"/>
+
+    <!-- Signaling: Musicians <-> Server -->
+    <path d="M1572 634 L1572 794 L1180 794" fill="none" stroke="#6E685F" stroke-width="2" stroke-dasharray="9 8"/>
+    <path d="M1194 787 L1180 794 L1194 801 M1579 648 L1572 634 L1565 648" fill="none" stroke="#6E685F" stroke-width="2"/>
+  </svg>
+
+  <p class="link-label" style="left:520px; top:512px; width:268px">Wi-Fi</p>
+  <p class="link-label" style="left:1150px; top:412px; width:232px">gesture</p>
+  <p class="link-label hot" style="left:1150px; top:574px; width:232px">sound, 9 ms</p>
 </section>
+
 </div>
-<div id="notes"></div>
-<div id="help">→ / space next · ← back · F full screen</div>
+
+<div id="progress"></div>
+<div id="jump-toast"></div>
+
+<div id="overview" aria-hidden="true">
+  <div class="ov-head">
+    <h2>Director — Slide Overview</h2>
+    <span>Click any slide · Esc or G to close</span>
+  </div>
+  <div class="ov-grid" id="ov-grid"></div>
+</div>
+
+
+<div id="help">→ / space next · ← back · G overview · R replay · F full screen</div>
+
 <script>
 (function () {
   var NOTES = [];
+  var META = [{"id": "cover", "title": "Director", "tag": "01 · Opening"}, {"id": "problem", "title": "Nobody can conduct them", "tag": "02 · The gap"}, {"id": "answer", "title": "All three back", "tag": "03 · The answer"}, {"id": "podium", "title": "The conductor", "tag": "04 · Podium"}, {"id": "gesture", "title": "What a musician sees", "tag": "05 · Expression"}, {"id": "ensemble", "title": "The ensemble", "tag": "06 · Ten sections"}, {"id": "seat", "title": "Opens a link. Picks a chair.", "tag": "07 · Musician join"}, {"id": "sound", "title": "Spatial sound", "tag": "08 · Audio demo"}, {"id": "session", "title": "One page to run it", "tag": "09 · Session UI"}, {"id": "numbers", "title": "It works end to end", "tag": "10 · Lab metrics"}, {"id": "demo", "title": "Your turn.", "tag": "11 · Live demo"}, {"id": "how", "title": "How it fits together", "tag": "BACKUP · Architecture", "backup": true}];
+  var HAS_NOTES = NOTES.length > 0;
   var stage = document.getElementById('stage');
   var slides = Array.prototype.slice.call(stage.children);
-  var notesBox = document.getElementById('notes');
+  var progress = document.getElementById('progress');
+  var jumpToast = document.getElementById('jump-toast');
+  var ovGrid = document.getElementById('ov-grid');
+  var notesBody = document.getElementById('notes-body');
+  var notesTitle = document.getElementById('notes-title');
   var cur = -1;
+  var mainCount = META.filter(function (m) { return !m.backup; }).length;
 
   function fit() {
     var s = Math.min(innerWidth / 1920, innerHeight / 1080);
@@ -432,67 +882,372 @@ var t0=null,prev=0;function frame(now){if(t0===null||now-prev&gt;1000)t0=now;pre
   addEventListener('resize', fit);
   fit();
 
-  // Numbers count up from zero when their slide arrives.
+  // Build slide overview grid (G key)
+  META.forEach(function (m, idx) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ov-card' + (m.backup ? ' backup' : '');
+    btn.innerHTML = '<div class="ov-tag">' + m.tag + '</div><div class="ov-name">' + m.title + '</div>';
+    btn.addEventListener('click', function () {
+      document.body.classList.remove('show-overview');
+      show(idx);
+    });
+    ovGrid.appendChild(btn);
+  });
+
+  // Toast helper
+  var toastTimer;
+  function flashToast(msg) {
+    jumpToast.textContent = msg;
+    jumpToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { jumpToast.classList.remove('show'); }, 1100);
+  }
+
+  // Smooth count-up for slide 10 numbers
   function countUp(el) {
     var target = parseInt(el.dataset.n || el.textContent, 10);
     if (isNaN(target)) return;
     el.dataset.n = target;
     var t0 = performance.now();
     (function step(now) {
-      var k = Math.min(1, (now - t0) / 1400), e = 1 - Math.pow(1 - k, 3);
+      var k = Math.min(1, (now - t0) / 1350), e = 1 - Math.pow(1 - k, 3);
       el.textContent = Math.round(target * e);
       if (k < 1 && el.closest('section').classList.contains('active')) requestAnimationFrame(step);
       else el.textContent = target;
     })(t0);
   }
 
-  // Elements that share an id on both slides glide from their old place (the three words).
+  // Two-way Magic Move for shared ids (#w-gesture, #w-room, #w-place)
   function magic(from, to) {
-    if (!from || from.dataset.transition !== 'magic') return;
+    if (!from || !to) return;
+    var pair = (from.id === 'problem' && to.id === 'answer') || (from.id === 'answer' && to.id === 'problem');
+    if (!pair) return;
     to.querySelectorAll('[id]').forEach(function (el) {
       var old = from.querySelector('[id="' + el.id + '"]');
       if (!old) return;
-      var dx = old.offsetLeft - el.offsetLeft, dy = old.offsetTop - el.offsetTop;
-      var c0 = getComputedStyle(old).color, c1 = getComputedStyle(el).color;
-      el.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)', color: c0 }, { transform: 'none', color: c1 }],
-        { duration: 900, easing: 'cubic-bezier(.2,.7,.2,1)' });
+      var dx = old.offsetLeft - el.offsetLeft;
+      var dy = old.offsetTop - el.offsetTop;
+      var c0 = getComputedStyle(old).color;
+      var c1 = getComputedStyle(el).color;
+      el.animate([
+        { transform: 'translate(' + dx + 'px,' + dy + 'px)', color: c0 },
+        { transform: 'none', color: c1 }
+      ], { duration: 860, easing: 'cubic-bezier(.22,.78,.22,1)' });
     });
+  }
+
+  // ---------- Slide 8: Synced Spatial Stereo Meter ----------
+  var soundVideo = document.getElementById('sound-video');
+  var vuL = document.getElementById('vu-l');
+  var vuR = document.getElementById('vu-r');
+  var vuLTxt = document.getElementById('vu-l-txt');
+  var vuRTxt = document.getElementById('vu-r-txt');
+  var soundPhase = document.getElementById('sound-phase');
+  var soundProg = document.getElementById('sound-prog');
+  var btnReplay = document.getElementById('btn-replay');
+  var btnMute = document.getElementById('btn-mute');
+
+  function updateMuteLabel() {
+    if (!btnMute || !soundVideo) return;
+    btnMute.textContent = soundVideo.muted ? 'Muted (M)' : 'Sound on (M)';
+  }
+  if (btnReplay) btnReplay.addEventListener('click', function (e) { e.stopPropagation(); replayCurrent(); });
+  if (btnMute) btnMute.addEventListener('click', function (e) {
+    e.stopPropagation();
+    soundVideo.muted = !soundVideo.muted;
+    updateMuteLabel();
+    flashToast(soundVideo.muted ? 'Audio muted' : 'Audio on');
+  });
+
+  // Keyframes of the 22s spatial piano clip (straight -> left -> straight -> right -> straight)
+  function soundEnvelope(t) {
+    // Returns { label, rShare } matching lab dB (+9.5 straight, +17 left, -16 right)
+    var T = 22.0;
+    t = ((t % T) + T) % T;
+    function sm(a, b, x) { var u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); }
+    var db = 9.5;
+    var label = 'Looking straight · +9.5 dB R';
+    if (t < 3.6) {
+      db = 9.5; label = 'Looking straight · +9.5 dB R';
+    } else if (t < 5.4) {
+      db = 9.5 + 7.5 * sm(3.6, 5.4, t); label = 'Turning left…';
+    } else if (t < 9.2) {
+      db = 17.0; label = 'Head turned left · +17.0 dB R';
+    } else if (t < 11.0) {
+      db = 17.0 - 7.5 * sm(9.2, 11.0, t); label = 'Returning to center…';
+    } else if (t < 13.0) {
+      db = 9.5; label = 'Looking straight · +9.5 dB R';
+    } else if (t < 15.0) {
+      db = 9.5 - 25.5 * sm(13.0, 15.0, t); label = 'Turning right past piano…';
+    } else if (t < 19.2) {
+      db = -16.0; label = 'Head turned right · −16.0 dB L';
+    } else {
+      db = -16.0 + 25.5 * sm(19.2, 21.4, t); label = 'Returning to center…';
+    }
+    // Gentle musical note breath modulation
+    var pulse = 0.92 + 0.08 * Math.sin(t * 7.2) * Math.cos(t * 2.9);
+    var rShare = 1 / (1 + Math.pow(10, -db / 18));
+    return {
+      label: label,
+      r: Math.max(6, Math.min(96, rShare * 100 * pulse)),
+      l: Math.max(6, Math.min(96, (1 - rShare) * 100 * pulse)),
+      pct: (t / T) * 100
+    };
+  }
+
+  function tickSound() {
+    if (cur === 7 && soundVideo) {
+      var env = soundEnvelope(soundVideo.currentTime || 0);
+      vuL.style.width = env.l.toFixed(1) + '%';
+      vuR.style.width = env.r.toFixed(1) + '%';
+      vuLTxt.textContent = Math.round(env.l) + '%';
+      vuRTxt.textContent = Math.round(env.r) + '%';
+      soundPhase.textContent = env.label;
+      soundProg.style.width = env.pct.toFixed(1) + '%';
+    }
+    requestAnimationFrame(tickSound);
+  }
+  requestAnimationFrame(tickSound);
+
+  // ---------- Slide 10: Proportional Latency Scale Canvas ----------
+  var latCanvas = document.getElementById('latency-canvas');
+  var latStart = 0;
+  function drawLatency(now) {
+    if (cur === 9 && latCanvas) {
+      var g = latCanvas.getContext('2d');
+      var W = 1664, H = 248;
+      var t = (now - latStart) / 1000;
+      g.clearRect(0, 0, W, H);
+
+      function rr(x, y, w, h, r) {
+        g.beginPath();
+        g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r);
+        g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r);
+        g.arcTo(x, y, x + w, y, r); g.closePath();
+      }
+      function ease(s) { s = Math.max(0, Math.min(1, s)); return s * s * (3 - 2 * s); }
+
+      // Top lane: live round-trip sound pulse (9 ms slowed 400x = 3.6 s)
+      var RT = 3.6, u = (t % RT) / RT;
+      var X0 = 264, X1 = 1400, Y = 68;
+      var x = u < 0.5 ? X0 + (X1 - X0) * ease(u * 2) : X1 - (X1 - X0) * ease((u - 0.5) * 2);
+      var hitR = (u >= 0.5 && u < 0.64) ? 1 - (u - 0.5) / 0.14 : 0;
+      var hitL = (u < 0.12 && t > 1.8) ? 1 - u / 0.12 : 0;
+
+      // Track line
+      g.strokeStyle = 'rgba(243,238,230,0.16)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(X0, Y); g.lineTo(X1, Y); g.stroke();
+
+      // Glowing pulse + comet tail
+      var dir = u < 0.5 ? 1 : -1;
+      for (var j = 1; j <= 16; j++) {
+        g.fillStyle = 'rgba(245,182,97,' + (0.48 - j * 0.028).toFixed(3) + ')';
+        g.beginPath(); g.arc(x - dir * j * 9, Y, Math.max(1.5, 6.2 - j * 0.32), 0, 7); g.fill();
+      }
+      g.save();
+      g.shadowColor = 'rgba(245,182,97,0.95)'; g.shadowBlur = 24;
+      g.fillStyle = '#F5B661'; g.beginPath(); g.arc(x, Y, 8.5, 0, 7); g.fill();
+      g.restore();
+
+      // Two audio boxes
+      function drawBox(bx, title, sub, glow) {
+        rr(bx, 18, 260, 100, 16);
+        g.fillStyle = 'rgba(243,238,230,' + (0.04 + 0.08 * glow).toFixed(3) + ')'; g.fill();
+        g.save();
+        g.shadowColor = 'rgba(245,182,97,0.85)'; g.shadowBlur = 28 * glow;
+        g.strokeStyle = glow > 0.02 ? 'rgba(245,182,97,' + (0.4 + 0.58 * glow).toFixed(3) + ')' : 'rgba(243,238,230,0.24)';
+        g.lineWidth = 2; g.stroke();
+        g.restore();
+        g.fillStyle = '#F3EEE6'; g.font = '600 22px "Inter Tight", Arial, sans-serif'; g.textAlign = 'center';
+        g.fillText(title, bx + 130, 62);
+        g.fillStyle = '#A8A095'; g.font = '400 17px "Inter Tight", Arial, sans-serif';
+        g.fillText(sub, bx + 130, 90);
+      }
+      drawBox(0, 'Musician’s box', 'Pi + mic · 64 samples', hitL);
+      drawBox(1404, 'Conductor’s box', 'Pi + spatial engine', hitR);
+
+      g.fillStyle = '#A8A095'; g.font = '500 20px "Inter Tight", Arial, sans-serif'; g.textAlign = 'center';
+      g.fillText('9 ms round trip (shown 400× slower)', W / 2, 114);
+
+      // Bottom lane: proportional scale bar (4.5 ms one-way vs 25 ms ensemble limit)
+      var BX = 264, BW = 1136, BY = 172, BH = 24;
+      var animIn = Math.min(1, t / 1.1);
+      var eIn = 1 - Math.pow(1 - animIn, 3);
+
+      // Full 30 ms reference bar
+      rr(BX, BY, BW, BH, 12);
+      g.fillStyle = 'rgba(243,238,230,0.06)'; g.fill();
+      g.strokeStyle = 'rgba(243,238,230,0.12)'; g.lineWidth = 1; g.stroke();
+
+      // 25 ms ensemble tolerance zone (0 -> 25/30 of bar)
+      var x25 = BX + BW * (25 / 30);
+      rr(BX, BY, (x25 - BX), BH, 12);
+      g.fillStyle = 'rgba(123,216,143,0.10)'; g.fill();
+
+      // Dashed vertical marker at 25 ms limit
+      g.save();
+      g.setLineDash([5, 5]);
+      g.strokeStyle = 'rgba(243,238,230,0.45)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(x25, BY - 10); g.lineTo(x25, BY + BH + 10); g.stroke();
+      g.restore();
+
+      // Our measured one-way latency: 4.5 ms (4.5/30 of bar)
+      var wOurs = BW * (4.5 / 30) * eIn;
+      rr(BX, BY, Math.max(16, wOurs), BH, 12);
+      g.save();
+      g.shadowColor = 'rgba(245,182,97,0.7)'; g.shadowBlur = 18;
+      g.fillStyle = '#F5B661'; g.fill();
+      g.restore();
+
+      // Labels underneath
+      g.textAlign = 'left'; g.fillStyle = '#F5B661'; g.font = '600 20px "Inter Tight", Arial, sans-serif';
+      g.fillText('4.5 ms one way (measured)', BX, BY + 54);
+      g.textAlign = 'center'; g.fillStyle = '#F3EEE6'; g.font = '500 19px "Inter Tight", Arial, sans-serif';
+      g.fillText('25 ms ensemble playing limit', x25, BY + 54);
+    }
+    requestAnimationFrame(drawLatency);
+  }
+  requestAnimationFrame(drawLatency);
+
+  // ---------- Presenter Timer (inside Notes drawer) ----------
+  var timerSec = 0, timerRunning = false, timerIv = null;
+  var clockEl = document.getElementById('timer-clock');
+  var toggleTimerBtn = document.getElementById('timer-toggle');
+  var resetTimerBtn = document.getElementById('timer-reset');
+  function renderTimer() {
+    if (!clockEl) return;
+    var m = Math.floor(timerSec / 60), s = timerSec % 60;
+    clockEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ' / 09:00';
+    clockEl.classList.toggle('warn', timerSec >= 480 && timerSec < 540);
+    clockEl.classList.toggle('over', timerSec >= 540);
+  }
+  function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    if (toggleTimerBtn) toggleTimerBtn.textContent = 'Pause';
+    timerIv = setInterval(function () { timerSec++; renderTimer(); }, 1000);
+  }
+  function pauseTimer() {
+    timerRunning = false;
+    if (toggleTimerBtn) toggleTimerBtn.textContent = 'Start';
+    clearInterval(timerIv);
+  }
+  if (toggleTimerBtn) toggleTimerBtn.addEventListener('click', function (e) { e.stopPropagation(); timerRunning ? pauseTimer() : startTimer(); });
+  if (resetTimerBtn) resetTimerBtn.addEventListener('click', function (e) { e.stopPropagation(); timerSec = 0; renderTimer(); });
+
+  function replayCurrent() {
+    var sec = slides[cur];
+    if (!sec) return;
+    sec.classList.remove('play-anim');
+    void sec.offsetWidth;
+    sec.classList.add('play-anim');
+    sec.querySelectorAll('video').forEach(function (v) { v.currentTime = 0; var p = v.play(); if (p) p.catch(function () {}); });
+    sec.querySelectorAll('.n').forEach(countUp);
+    if (cur === 9) latStart = performance.now();
+    flashToast('Replayed slide ' + (cur + 1));
   }
 
   function show(i) {
     i = Math.max(0, Math.min(slides.length - 1, i));
     if (i === cur) return;
     var prev = slides[cur], next = slides[i];
+
+    // Auto-start presenter timer when advancing from cover
+    if (HAS_NOTES && cur === 0 && i === 1 && !timerRunning && timerSec === 0) startTimer();
+
     if (prev) {
       prev.classList.remove('active');
+      prev.classList.add('leaving');
       prev.querySelectorAll('video').forEach(function (v) { v.pause(); });
-      prev.querySelectorAll('iframe.embed').forEach(function (f) { f.removeAttribute('srcdoc'); });
+      setTimeout(function () {
+        if (!prev.classList.contains('active')) {
+          prev.classList.remove('leaving', 'play-anim');
+        }
+      }, 540);
     }
-    next.classList.add('active');
-    // Restart the live drawings from their first moment.
-    next.querySelectorAll('iframe.embed').forEach(function (f) { f.srcdoc = f.dataset.src; });
-    next.querySelectorAll('video').forEach(function (v) { v.currentTime = 0; var p = v.play(); if (p) p.catch(function () {}); });
+
+    next.classList.remove('leaving', 'play-anim');
+    void next.offsetWidth;
+    next.classList.add('active', 'play-anim');
+    next.querySelectorAll('video').forEach(function (v) {
+      v.currentTime = 0;
+      var p = v.play();
+      if (p) p.catch(function () {});
+    });
     next.querySelectorAll('.n').forEach(countUp);
-    if (prev && i === cur + 1) magic(prev, next);
+    if (i === 9) latStart = performance.now();
+    if (prev) magic(prev, next);
+
     cur = i;
-    notesBox.innerHTML = '<b>' + (i + 1) + ' / ' + slides.length + '</b>' + (NOTES[i] || '');
+
+    // Progress bar (1..mainCount)
+    var isBackup = !!META[i].backup;
+    progress.classList.toggle('is-backup', isBackup);
+    progress.style.width = isBackup ? '100%' : ((i / (mainCount - 1)) * 100).toFixed(2) + '%';
+
+    // Overview highlight
+    Array.prototype.forEach.call(ovGrid.children, function (c, idx) {
+      c.classList.toggle('current', idx === i);
+    });
+
+    if (HAS_NOTES && notesBody && notesTitle) {
+      notesTitle.textContent = (i + 1) + ' / ' + slides.length + ' · ' + META[i].title;
+      notesBody.textContent = NOTES[i] || '';
+    }
     if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  // Multi-digit numeric jump buffer (e.g., press "1" then "2" -> slide 12!)
+  var numBuf = '', numTimer = null;
+  function handleDigit(d) {
+    numBuf += d;
+    clearTimeout(numTimer);
+    var n = parseInt(numBuf, 10);
+    flashToast('Jump to slide ' + numBuf + '…');
+    // If single digit >= 2 (can't start 10-12), jump faster; if "1", wait briefly for second digit
+    var delay = (numBuf.length === 1 && numBuf === '1') ? 480 : 120;
+    numTimer = setTimeout(function () {
+      var target = parseInt(numBuf, 10);
+      numBuf = '';
+      if (!isNaN(target) && target >= 1 && target <= slides.length) show(target - 1);
+    }, delay);
   }
 
   addEventListener('keydown', function (e) {
     var k = e.key;
+    if (k === 'Escape' && document.body.classList.contains('show-overview')) {
+      document.body.classList.remove('show-overview'); return;
+    }
+    if (k === 'g' || k === 'G') {
+      document.body.classList.toggle('show-overview'); e.preventDefault(); return;
+    }
+    if (document.body.classList.contains('show-overview')) return;
+
+    if (k >= '0' && k <= '9') { handleDigit(k); e.preventDefault(); return; }
     if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter' || k === 'ArrowDown') { show(cur + 1); e.preventDefault(); }
     else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace' || k === 'ArrowUp') { show(cur - 1); e.preventDefault(); }
     else if (k === 'Home') show(0);
     else if (k === 'End') show(slides.length - 1);
     else if (k === 'f' || k === 'F') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
+    else if (k === 'r' || k === 'R') { replayCurrent(); e.preventDefault(); }
+    else if ((k === 'm' || k === 'M') && soundVideo) {
+      soundVideo.muted = !soundVideo.muted; updateMuteLabel();
+      flashToast(soundVideo.muted ? 'Audio muted' : 'Audio on');
+    }
+    
   });
-  addEventListener('click', function (e) { if (!e.target.closest('#notes')) show(e.clientX < innerWidth * 0.25 ? cur - 1 : cur + 1); });
+
+  addEventListener('click', function (e) {
+    if (document.body.classList.contains('show-overview')) return;
+    if (e.target.closest('#notes') || e.target.closest('button')) return;
+    show(e.clientX < innerWidth * 0.25 ? cur - 1 : cur + 1);
+  });
 
   var idle;
   addEventListener('mousemove', function () {
     document.body.classList.remove('idle'); clearTimeout(idle);
-    idle = setTimeout(function () { document.body.classList.add('idle'); }, 2000);
+    idle = setTimeout(function () { document.body.classList.add('idle'); }, 2200);
   });
   idle = setTimeout(function () { document.body.classList.add('idle'); }, 3000);
 
