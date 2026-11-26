@@ -221,6 +221,8 @@ section.play-anim .motif circle { stroke-dasharray: 320; animation: strokeDraw 1
 .word.off { top: 580px; color: var(--dim); }
 .word.on  { top: 360px; color: var(--ink); }
 
+.prob-sub { position: absolute; left: 128px; top: 462px; width: 1580px; font-size: 28px; line-height: 1.4; color: var(--mute); }
+.how-foot { position: absolute; left: 128px; top: 930px; width: 1664px; font-size: 26px; line-height: 1.4; color: var(--mute); }
 .cap { position: absolute; top: 720px; width: 470px; font-size: 28px; line-height: 1.42; color: var(--mute); }
 .col-rule {
   position: absolute; top: 564px; width: 470px; height: 1px;
@@ -510,6 +512,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
 <section id="problem" data-transition="magic">
   <div class="stage-ambient"></div>
   <h2 class="statement rise">Musicians can already play together from far apart. <i>Nobody can conduct them.</i></h2>
+  <p class="prob-sub rise" style="--i:1">The sound already arrives in time, in under 25 ms. What is missing is the conductor.</p>
 
   <!-- Minimalist muted motifs -->
   <svg class="col-motif off motif" style="left:128px; --i:1" viewBox="0 0 84 52" fill="none">
@@ -587,6 +590,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
     <p class="rise" style="--i:3">Turns the score pages on the stand.</p>
     <p class="rise" style="--i:4">Starts and stops the rehearsal.</p>
     <p class="rise" style="--i:5">Head and hands reach every musician.</p>
+    <p class="rise" style="--i:6">Meta Quest Pro: it tracks the hands, the eyes and the face.</p>
   </div>
 </section>
 
@@ -599,6 +603,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
     <p class="eyebrow rise">What a musician sees</p>
     <h2 class="rise" style="--i:1">The conductor’s beat, and a look your way.</h2>
     <p class="sub rise" style="--i:3">Head, hands, eyes and face come from the headset as they move. Musicians follow a person, not a video.</p>
+    <p class="sub rise" style="--i:4">Here she beats four, looks at the cellist, smiles, and asks for more with the left hand.</p>
   </div>
   <div class="gest-chip rise" style="--i:4"><span>Quest Pro</span> · head, hands, eye gaze &amp; 52 facial expressions</div>
 </section>
@@ -607,11 +612,11 @@ body.show-notes #help { bottom: auto; top: 14px; }
 <section id="ensemble" data-transition="fade">
   <video class="bleed film" src="media/ensemble.mp4" poster="media/ensemble.jpg" muted loop playsinline preload="auto"></video>
   <div class="veil-b"></div>
-  <div class="badge-pill rise" style="--i:2"><span class="dot"></span>All 10 sections · 72 fps on Quest Pro</div>
+  <div class="badge-pill rise" style="--i:2"><span class="dot"></span>All 9 sections · 72 fps on Quest Pro</div>
   <div class="low">
     <p class="eyebrow rise">The ensemble</p>
     <h2 class="rise" style="--i:1">Every musician in their chair, playing their part.</h2>
-    <p class="sub rise" style="--i:3">Ten sections, from strings to drums. Each looks the way they chose and plays in time with the others.</p>
+    <p class="sub rise" style="--i:3">Nine sections, from strings to drums. Each looks the way they chose and plays in time with the others: bows move, hands on the keys, the winds breathe.</p>
   </div>
 </section>
 
@@ -621,7 +626,8 @@ body.show-notes #help { bottom: auto; top: 14px; }
     <p class="eyebrow rise">The musician</p>
     <h2 class="rise" style="--i:1">Opens a link. Picks a chair.</h2>
     <p class="body rise" style="--i:2">The chair they choose is <b>where the conductor sees them</b>, and <b>where their sound comes from.</b></p>
-    <p class="body rise" style="--i:3">A browser for the picture, a small audio box for the sound.</p>
+    <p class="body rise" style="--i:3">Chooses a look: figure, outfit, skin tone.</p>
+    <p class="body rise" style="--i:4">A browser for the picture. For the sound, a small audio box: today a Raspberry Pi.</p>
   </div>
   <div class="browser-frame bloom" style="--i:2">
     <div class="browser-bar">
@@ -638,10 +644,10 @@ body.show-notes #help { bottom: auto; top: 14px; }
 <!-- SLIDE 8: SPATIAL SOUND (HERO SLIDE WITH LIVE SYNCED METER + CONTROLS) -->
 <section id="sound" data-transition="fade">
   <div class="side" style="height: 840px;">
-    <p class="eyebrow rise">Spatial sound</p>
+    <p class="eyebrow rise">Spatial sound · by atmoky</p>
     <h2 class="rise" style="--i:1">Turn your head. The sound stays in the chair.</h2>
     <p class="body rise" style="--i:2">In front or behind, left or right, above or below: each musician is heard <b>from where they sit</b>, as in a real hall.</p>
-    <p class="body rise" style="--i:3"><b>Listen:</b> the piano plays through our spatial engine as the head turns. Levels shown are the ones measured in the lab.</p>
+    <p class="body rise" style="--i:3"><b>Listen:</b> the piano is on the right. Turn left: it moves further right. Turn right: it goes to the left ear.</p>
 
     <div class="sound-panel rise" style="--i:4">
       <div class="sound-panel-head">
@@ -678,6 +684,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
     <h2 class="rise" style="--i:1">One page to run the rehearsal.</h2>
     <p class="body rise" style="--i:2"><b>Who is in, whose sound is connected,</b> and whether the conductor is ready.</p>
     <p class="body rise" style="--i:3">A new audio box is named with one click. The top line says when to start.</p>
+    <p class="body rise" style="--i:4">You will see it on the screen during the demo.</p>
   </div>
   <div class="browser-frame bloom" style="--i:2">
     <div class="browser-bar">
@@ -735,7 +742,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
           <path d="M11 21 L18 14 L25 19 L34 11 L43 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <p class="what">In the headset, all ten sections seated</p>
+      <p class="what">In the headset, all nine sections seated</p>
       <p class="how">Meta Quest Pro, the headset’s full rate</p>
     </div>
 
@@ -770,7 +777,8 @@ body.show-notes #help { bottom: auto; top: 14px; }
     <li class="rise" style="--i:2"><span class="step-num">01</span>Put on the headset: you are on the podium.</li>
     <li class="rise" style="--i:3"><span class="step-num">02</span>A musician takes a chair from the browser and plays.</li>
     <li class="rise" style="--i:4"><span class="step-num">03</span>Turn your head: the sound stays in the chair.</li>
-    <li class="rise" style="--i:5"><span class="step-num">04</span>On the screen, the session page shows who is in.</li>
+    <li class="rise" style="--i:5"><span class="step-num">04</span>She changes chair: her sound follows her.</li>
+    <li class="rise" style="--i:6"><span class="step-num">05</span>On the screen, the session page shows who is in.</li>
   </ol>
   <p class="credit">Spatial audio by atmoky (atmoky.com). MUSMET project, SONIC Lab, Politecnico di Torino.</p>
 </section>
@@ -842,6 +850,7 @@ body.show-notes #help { bottom: auto; top: 14px; }
   <p class="link-label" style="left:520px; top:512px; width:268px">Wi-Fi</p>
   <p class="link-label" style="left:1150px; top:412px; width:232px">gesture</p>
   <p class="link-label hot" style="left:1150px; top:574px; width:232px">sound, 9 ms</p>
+  <p class="how-foot rise" style="--i:6">Everything also runs on a local network, without internet.</p>
 </section>
 
 </div>
